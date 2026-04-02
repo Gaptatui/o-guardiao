@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "Alerta": {
+      "title": "Alerta de Emergência",
+      "description": "Um alerta de emergência gerado por áudio.",
+      "type": "object",
+      "properties": {
+        "tipo": { "type": "string" },
+        "gravidade": { "type": "string" },
+        "transcricao": { "type": "string" },
+        "sons_fundo": { "type": "string" },
+        "analise_ia_audio": { "type": "string" },
+        "prioridade": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "uid": { "type": "string" },
+        "status": { "type": "string" },
+        "userEmail": { "type": "string" }
+      },
+      "required": ["tipo", "gravidade", "timestamp", "uid"]
+    },
+    "VizinhoAlerta": {
+      "title": "Alerta da Rede de Vizinhos",
+      "description": "Relatos da comunidade sobre segurança local.",
+      "type": "object",
+      "properties": {
+        "titulo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "categoria": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "uid": { "type": "string" },
+        "userName": { "type": "string" }
+      },
+      "required": ["titulo", "descricao", "timestamp", "uid"]
+    },
+    "PerfilSaude": {
+      "title": "Perfil de Saúde Universal",
+      "description": "Dados médicos para emergências.",
+      "type": "object",
+      "properties": {
+        "tipoSanguineo": { "type": "string" },
+        "alergias": { "type": "string" },
+        "historico": { "type": "string" },
+        "medicacoes": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["uid"]
+    },
+    "LembreteMedicao": {
+      "title": "Lembrete de Medicação",
+      "description": "Lembretes de remédios para o usuário.",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "horario": { "type": "string" },
+        "dosagem": { "type": "string" },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["nome", "horario", "uid"]
+    },
+    "ServicoTalento": {
+      "title": "Serviço no Mercado de Talentos",
+      "description": "Oferta de serviço técnico ou consultoria.",
+      "type": "object",
+      "properties": {
+        "titulo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "categoria": { "type": "string" },
+        "preco": { "type": "string" },
+        "uid": { "type": "string" },
+        "userName": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["titulo", "descricao", "uid"]
+    }
+  },
+  "firestore": {
+    "alertas/{alertaId}": {
+      "schema": "Alerta",
+      "description": "Coleção de alertas de emergência."
+    },
+    "vizinhos_alertas/{alertaId}": {
+      "schema": "VizinhoAlerta",
+      "description": "Feed da rede de vizinhos."
+    },
+    "perfis_saude/{uid}": {
+      "schema": "PerfilSaude",
+      "description": "Perfis de saúde dos usuários."
+    },
+    "lembretes_medicacao/{lembreteId}": {
+      "schema": "LembreteMedicao",
+      "description": "Lembretes de remédios."
+    },
+    "mercado_talentos/{servicoId}": {
+      "schema": "ServicoTalento",
+      "description": "Serviços oferecidos na comunidade."
+    }
+  }
+}

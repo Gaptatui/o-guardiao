@@ -1,0 +1,89 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: alertas
+// Document ID: auto-generated
+// Fields:
+//   - tipo: string (Médica, Segurança, Acidente, Desconhecido)
+//   - gravidade: string (Baixa, Média, Alta, Crítica)
+//   - transcricao: string
+//   - sons_fundo: string
+//   - analise_ia_audio: string
+//   - prioridade: string
+//   - timestamp: number
+//   - uid: string (owner)
+//   - status: string (Pendente, Em Atendimento, Resolvido)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "gersonproenca@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidAlerta(data) {
+      return data.keys().hasAll(['tipo', 'gravidade', 'timestamp', 'uid']) &&
+             data.tipo is string &&
+             data.gravidade is string &&
+             data.timestamp is number &&
+             data.uid is string &&
+             data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /alertas/{alertaId} {
+      allow create: if isAuthenticated() && isValidAlerta(request.resource.data);
+      allow read: if isDocOwner() || isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /vizinhos_alertas/{alertaId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /perfis_saude/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid);
+    }
+
+    match /lembretes_medicacao/{lembreteId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    match /mercado_talentos/{servicoId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+  }
+}
