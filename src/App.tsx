@@ -216,7 +216,7 @@ const translations = {
     universalWallet: "Carteira Universal",
     qrCodeDescription: "QR Code criptografado com seu histórico vital para socorristas.",
     manageMedicalData: "Gerenciar Dados Médicos",
-    nearbyUnits: "Unidades Próximas em Santos",
+    nearbyUnits: "Unidades de Saúde Próximas em Santos",
     nearbyPharmacies: "Farmácias Próximas",
     findPharmacies: "Buscar Farmácias",
     leisureCulture: "LAZER E CULTURA",
@@ -229,8 +229,18 @@ const translations = {
     supermarket: "Supermercado",
     bakery: "Padaria",
     pharmacy: "Farmácia",
+    advancedSearch: "Pesquisa Avançada",
+    foodType: "Tipo de Comida",
+    allTypes: "Todos os Tipos",
+    italian: "Italiana",
+    japanese: "Japonesa",
+    brazilian: "Brasileira",
+    fastFood: "Fast Food",
+    healthy: "Saudável",
+    pizza: "Pizza",
+    seafood: "Frutos do Mar",
     pharmacyPrompt: "Quais são as 3 farmácias mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
-    unitsPrompt: "Quais são as 3 unidades de saúde mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
+    unitsPrompt: "Quais são as 5 unidades de saúde (UPAs, postos de saúde, hospitais, policlínicas) mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
     leisurePrompt: "Quais são os 3 {category} mais próximos de mim? Elenque-os no formato 'Nome (Distância) [Avaliação]'. A avaliação deve ser um número de 0 a 5.",
     financialStability: "ESTABILIDADE FINANCEIRA",
     antiFraudShieldActive: "Escudo Anti-Fraude Ativo",
@@ -415,7 +425,7 @@ const translations = {
     universalWallet: "Universal Wallet",
     qrCodeDescription: "Encrypted QR Code with your vital history for responders.",
     manageMedicalData: "Manage Medical Data",
-    nearbyUnits: "Nearby Units in Santos",
+    nearbyUnits: "Nearby Health Units in Santos",
     nearbyPharmacies: "Nearby Pharmacies",
     findPharmacies: "Find Pharmacies",
     leisureCulture: "LEISURE & CULTURE",
@@ -428,8 +438,18 @@ const translations = {
     supermarket: "Supermarket",
     bakery: "Bakery",
     pharmacy: "Pharmacy",
+    advancedSearch: "Advanced Search",
+    foodType: "Food Type",
+    allTypes: "All Types",
+    italian: "Italian",
+    japanese: "Japanese",
+    brazilian: "Brazilian",
+    fastFood: "Fast Food",
+    healthy: "Healthy",
+    pizza: "Pizza",
+    seafood: "Seafood",
     pharmacyPrompt: "What are the 3 nearest pharmacies to me? List them in the format 'Name (Distance)'.",
-    unitsPrompt: "What are the 3 nearest health units (hospitals, clinics) to me? List them in the format 'Name (Distance)'.",
+    unitsPrompt: "What are the 5 nearest health units (UPAs, health centers, hospitals, polyclinics) to me? List them in the format 'Name (Distance)'.",
     leisurePrompt: "What are the 3 nearest {category} to me? List them in the format 'Name (Distance) [Rating]'. The rating should be a number from 0 to 5.",
     financialStability: "FINANCIAL STABILITY",
     antiFraudShieldActive: "Anti-Fraud Shield Active",
@@ -614,7 +634,7 @@ const translations = {
     universalWallet: "Billetera Universal",
     qrCodeDescription: "Código QR cifrado con su historial vital para socorristas.",
     manageMedicalData: "Gestionar Datos Médicos",
-    nearbyUnits: "Unidades Cercanas en Santos",
+    nearbyUnits: "Unidades de Salud Cercanas en Santos",
     nearbyPharmacies: "Farmacias Cercanas",
     findPharmacies: "Buscar Farmacias",
     leisureCulture: "OCIO Y CULTURA",
@@ -627,8 +647,18 @@ const translations = {
     supermarket: "Supermercado",
     bakery: "Panadería",
     pharmacy: "Farmacia",
+    advancedSearch: "Búsqueda Avanzada",
+    foodType: "Tipo de Comida",
+    allTypes: "Todos los Tipos",
+    italian: "Italiana",
+    japanese: "Japonesa",
+    brazilian: "Brasileña",
+    fastFood: "Comida Rápida",
+    healthy: "Saludable",
+    pizza: "Pizza",
+    seafood: "Mariscos",
     pharmacyPrompt: "¿Cuáles son las 3 farmacias más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
-    unitsPrompt: "¿Cuáles son las 3 unidades de salud (hospitales, clínicas) más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
+    unitsPrompt: "¿Cuáles son las 5 unidades de salud (UPAs, centros de salud, hospitales, policlínicas) más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
     leisurePrompt: "¿Cuáles son los 3 {category} más cercanos a mí? Enuméralos en el formato 'Nombre (Distancia) [Calificación]'. La calificación debe ser un número de 0 a 5.",
     financialStability: "ESTABILIDAD FINANCIERA",
     antiFraudShieldActive: "Escudo Anti-Fraude Activo",
@@ -813,7 +843,7 @@ const translations = {
     universalWallet: "Portefeuille universel",
     qrCodeDescription: "Code QR crypté avec votre historique vital pour les secouristes.",
     manageMedicalData: "Gérer les données médicales",
-    nearbyUnits: "Unités à proximité à Santos",
+    nearbyUnits: "Unités de santé à proximité à Santos",
     nearbyPharmacies: "Pharmacies à proximité",
     findPharmacies: "Trouver des pharmacies",
     leisureCulture: "LOISIRS ET CULTURE",
@@ -824,8 +854,18 @@ const translations = {
     bar: "Bar",
     restaurant: "Restaurant",
     pharmacy: "Pharmacie",
+    advancedSearch: "Recherche Avancée",
+    foodType: "Type de Cuisine",
+    allTypes: "Tous les Types",
+    italian: "Italienne",
+    japanese: "Japonaise",
+    brazilian: "Brésilienne",
+    fastFood: "Fast Food",
+    healthy: "Sain",
+    pizza: "Pizza",
+    seafood: "Fruits de Mer",
     pharmacyPrompt: "Quelles sont les 3 pharmacies les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
-    unitsPrompt: "Quelles sont les 3 unités de santé (hôpitaux, cliniques) les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
+    unitsPrompt: "Quelles sont les 5 unités de santé (UPAs, centres de santé, hôpitaux, polycliniques) les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
     leisurePrompt: "Quels sont les 3 {category} les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
     financialStability: "STABILITÉ FINANCIÈRE",
     antiFraudShieldActive: "Bouclier anti-fraude actif",
@@ -1010,7 +1050,7 @@ const translations = {
     universalWallet: "Universelle Brieftasche",
     qrCodeDescription: "Verschlüsselter QR-Code mit Ihrer Vitalhistorie für Ersthelfer.",
     manageMedicalData: "Medizinische Daten verwalten",
-    nearbyUnits: "Nahegelegene Einheiten in Santos",
+    nearbyUnits: "Nahegelegene Gesundheitseinheiten in Santos",
     nearbyPharmacies: "Apotheken in der Nähe",
     findPharmacies: "Apotheken finden",
     leisureCulture: "FREIZEIT & KULTUR",
@@ -1021,8 +1061,18 @@ const translations = {
     bar: "Bar",
     restaurant: "Restaurant",
     pharmacy: "Apotheke",
+    advancedSearch: "Erweiterte Suche",
+    foodType: "Art der Küche",
+    allTypes: "Alle Typen",
+    italian: "Italienisch",
+    japanese: "Japanisch",
+    brazilian: "Brasilianisch",
+    fastFood: "Fast Food",
+    healthy: "Gesund",
+    pizza: "Pizza",
+    seafood: "Meeresfrüchte",
     pharmacyPrompt: "Was sind die 3 nächsten Apotheken in meiner Nähe? Listen Sie sie im Format 'Name (Entfernung)' auf.",
-    unitsPrompt: "Was sind die 3 nächsten Gesundheitseinrichtungen (Krankenhäuser, Kliniken) in meiner Nähe? Listen Sie sie im Format 'Name (Entfernung)' auf.",
+    unitsPrompt: "Was sind die 5 nächsten Gesundheitseinrichtungen (UPAs, Gesundheitszentren, Krankenhäuser, Polikliniken) in meiner Nähe? Listen Sie sie im Format 'Name (Entfernung)' auf.",
     leisurePrompt: "Was sind die 3 nächstgelegenen {category} für mich? Listen Sie sie im Format 'Name (Entfernung)' auf.",
     financialStability: "FINANZIELLE STABILITÄT",
     antiFraudShieldActive: "Anti-Betrugs-Schild aktiv",
@@ -1207,7 +1257,7 @@ const translations = {
     universalWallet: "Portafoglio universale",
     qrCodeDescription: "Codice QR crittografato with la tua storia vitale per i soccorritori.",
     manageMedicalData: "Gestisci dati medici",
-    nearbyUnits: "Unità vicine a Santos",
+    nearbyUnits: "Unità sanitarie vicine a Santos",
     nearbyPharmacies: "Farmacie vicine",
     findPharmacies: "Trova farmacie",
     leisureCulture: "SVAGO E CULTURA",
@@ -1218,8 +1268,18 @@ const translations = {
     bar: "Bar",
     restaurant: "Ristorante",
     pharmacy: "Farmacia",
+    advancedSearch: "Ricerca Avanzata",
+    foodType: "Tipo di Cucina",
+    allTypes: "Tutti i Tipi",
+    italian: "Italiana",
+    japanese: "Giapponese",
+    brazilian: "Brasiliana",
+    fastFood: "Fast Food",
+    healthy: "Salutare",
+    pizza: "Pizza",
+    seafood: "Frutti di Mare",
     pharmacyPrompt: "Quali sono le 3 farmacie più vicine a me? Elencale nel formato 'Nome (Distanza)'.",
-    unitsPrompt: "Quali sono le 3 unità sanitarie (ospedali, cliniche) più vicine a me? Elencale nel formato 'Nome (Distanza)'.",
+    unitsPrompt: "Quali sono le 5 unità sanitarie (UPA, centri sanitari, ospedali, policlinici) più vicine a me? Elencale nel formato 'Nome (Distanza)'.",
     leisurePrompt: "Quali sono i 3 {category} più vicini a me? Elencali nel formato 'Nome (Distanza)'.",
     financialStability: "STABILITÀ FINANZIARIA",
     antiFraudShieldActive: "Scudo anti-frode attivo",
@@ -1404,7 +1464,7 @@ const translations = {
     universalWallet: "Universele portemonnee",
     qrCodeDescription: "Gecodeerde QR-code met uw vitale geschiedenis voor hulpverleners.",
     manageMedicalData: "Medische gegevens beheren",
-    nearbyUnits: "Nabijgelegen eenheden in Santos",
+    nearbyUnits: "Nabijgelegen gezondheidseenheden in Santos",
     nearbyPharmacies: "Apotheken in de buurt",
     findPharmacies: "Apotheken zoeken",
     leisureCulture: "VRIJE TIJD & CULTUUR",
@@ -1415,8 +1475,18 @@ const translations = {
     bar: "Bar",
     restaurant: "Restaurant",
     pharmacy: "Apotheek",
+    advancedSearch: "Geavanceerd Zoeken",
+    foodType: "Type Keuken",
+    allTypes: "Alle Types",
+    italian: "Italiaans",
+    japanese: "Japans",
+    brazilian: "Braziliaans",
+    fastFood: "Fast Food",
+    healthy: "Gezond",
+    pizza: "Pizza",
+    seafood: "Zeevruchten",
     pharmacyPrompt: "Wat zijn de 3 dichtstbijzijnde apotheken bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
-    unitsPrompt: "Wat zijn de 3 dichtstbijzijnde gezondheidscentra (ziekenhuizen, klinieken) bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
+    unitsPrompt: "Wat zijn de 5 dichtstbijzijnde gezondheidscentra (UPA's, gezondheidscentra, ziekenhuizen, poliklinieken) bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
     leisurePrompt: "Wat zijn de 3 dichtstbijzijnde {category} bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
     financialStability: "FINANCIËLE STABILITEIT",
     antiFraudShieldActive: "Anti-fraude schild actief",
@@ -1601,7 +1671,7 @@ const translations = {
     universalWallet: "通用钱包",
     qrCodeDescription: "为救援人员准备的包含您生命史的加密二维码。",
     manageMedicalData: "管理医疗数据",
-    nearbyUnits: "桑托斯附近的单位",
+    nearbyUnits: "桑托斯附近的卫生单位",
     nearbyPharmacies: "附近药店",
     findPharmacies: "查找药店",
     leisureCulture: "休闲与文化",
@@ -1612,8 +1682,18 @@ const translations = {
     bar: "酒吧",
     restaurant: "餐厅",
     pharmacy: "药店",
+    advancedSearch: "高级搜索",
+    foodType: "食物类型",
+    allTypes: "所有类型",
+    italian: "意大利菜",
+    japanese: "日本料理",
+    brazilian: "巴西菜",
+    fastFood: "快餐",
+    healthy: "健康食品",
+    pizza: "比萨",
+    seafood: "海鲜",
     pharmacyPrompt: "离我最近的3家药店有哪些？请按“名称 (距离)”的格式列出。",
-    unitsPrompt: "离我最近的3家医疗机构（医院、诊所）有哪些？请按“名称 (距离)”的格式列出。",
+    unitsPrompt: "离我最近的5家医疗机构（UPA、卫生中心、医院、综合诊所）有哪些？请按“名称 (距离)”的格式列出。",
     leisurePrompt: "离我最近的3家{category}有哪些？请按“名称 (距离)”的格式列出。",
     financialStability: "财务稳定",
     antiFraudShieldActive: "反欺诈护盾激活",
@@ -1798,7 +1878,7 @@ const translations = {
     universalWallet: "ארנק אוניברסלי",
     qrCodeDescription: "קוד QR מוצפן עם ההיסטוריה הרפואית שלך למגיבים ראשונים.",
     manageMedicalData: "נהל נתונים רפואיים",
-    nearbyUnits: "יחידות קרובות בסנטוס",
+    nearbyUnits: "יחידות בריאות קרובות בסנטוס",
     nearbyPharmacies: "בתי מרקחת קרובים",
     findPharmacies: "חפש בתי מרקחת",
     leisureCulture: "פנאי ותרבות",
@@ -1809,8 +1889,18 @@ const translations = {
     bar: "בר",
     restaurant: "מסעדה",
     pharmacy: "בית מרקחת",
+    advancedSearch: "חיפוש מתקדם",
+    foodType: "סוג אוכל",
+    allTypes: "כל הסוגים",
+    italian: "איטלקי",
+    japanese: "יפני",
+    brazilian: "ברזילאי",
+    fastFood: "אוכל מהיר",
+    healthy: "בריא",
+    pizza: "פיצה",
+    seafood: "פירות ים",
     pharmacyPrompt: "מהם 3 בתי המרקחת הקרובים ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
-    unitsPrompt: "מהן 3 יחידות הבריאות (בתי חולים, מרפאות) הקרובות ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
+    unitsPrompt: "מהן 5 יחידות הבריאות (UPA, מרכזי בריאות, בתי חולים, פוליקליניקות) הקרובות ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
     leisurePrompt: "מהם 3 ה-{category} הקרובים ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
     financialStability: "יציבות פיננסית",
     antiFraudShieldActive: "מגן נגד הונאות פעיל",
@@ -1968,6 +2058,7 @@ export default function App() {
   const [leisureList, setLeisureList] = useState<any[]>([]);
   const [isFetchingLeisure, setIsFetchingLeisure] = useState(false);
   const [leisureCategory, setLeisureCategory] = useState<'cinema' | 'mall' | 'theater' | 'bar' | 'restaurant' | 'supermarket' | 'bakery'>('cinema');
+  const [leisureSubCategory, setLeisureSubCategory] = useState<string>('');
   const [alertasList, setAlertasList] = useState<Alerta[]>([]);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -2082,8 +2173,11 @@ export default function App() {
             const match = text.match(distanceRegex);
             
             let type = "Unidade de Saúde";
-            if (name.toLowerCase().includes('hospital')) type = "Hospital";
-            else if (name.toLowerCase().includes('upa')) type = "UPA";
+            const lowerName = name.toLowerCase();
+            if (lowerName.includes('hospital')) type = "Hospital";
+            else if (lowerName.includes('upa')) type = "UPA";
+            else if (lowerName.includes('posto') || lowerName.includes('ubs')) type = "Posto de Saúde";
+            else if (lowerName.includes('policlinica') || lowerName.includes('policlínica')) type = "Policlínica";
 
             return {
               name: name,
@@ -2093,7 +2187,7 @@ export default function App() {
             };
           })
           .sort((a: any, b: any) => parseDistance(a.distance) - parseDistance(b.distance))
-          .slice(0, 3); // Ensure only 3
+          .slice(0, 5); // Increased to 5
         setHealthUnitsList(foundUnits);
       }
     } catch (error) {
@@ -2103,7 +2197,7 @@ export default function App() {
     }
   };
 
-  const fetchNearbyLeisure = async (category: string) => {
+  const fetchNearbyLeisure = async (category: string, subCategory?: string) => {
     setIsFetchingLeisure(true);
     setLeisureList([]);
     try {
@@ -2123,7 +2217,12 @@ export default function App() {
       }
 
       const categoryName = t[category as keyof typeof t] || category;
-      const prompt = t.leisurePrompt.replace('{category}', categoryName);
+      let finalCategory = categoryName;
+      if (subCategory && subCategory !== '') {
+        const subCategoryName = t[subCategory as keyof typeof t] || subCategory;
+        finalCategory = `${subCategoryName} (${categoryName})`;
+      }
+      const prompt = t.leisurePrompt.replace('{category}', finalCategory);
 
       const response = await genAI.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -2192,8 +2291,8 @@ export default function App() {
   }, [healthTab]);
 
   useEffect(() => {
-    fetchNearbyLeisure(leisureCategory);
-  }, [leisureCategory]);
+    fetchNearbyLeisure(leisureCategory, leisureSubCategory);
+  }, [leisureCategory, leisureSubCategory]);
 
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const [safeRouteSuggestion, setSafeRouteSuggestion] = useState<string | null>(null);
@@ -2778,10 +2877,11 @@ export default function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start"
             >
-              {/* Block 1: Security */}
-              <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-8">
+              <div className="space-y-8">
+                {/* Block 1: Security */}
+                <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-8">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-black flex items-center gap-2">
                     <Navigation className="w-6 h-6 text-indigo-600" /> {t.localSecurity}
@@ -2984,7 +3084,7 @@ export default function App() {
                     )}
                   </div>
                 </div>
-
+                
                 <button 
                   onClick={() => setIsWalking(!isWalking)}
                   className={`w-full py-5 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all transform active:scale-95 ${
@@ -2999,28 +3099,91 @@ export default function App() {
               </section>
 
               {/* Block 4: Quick Actions (Moved below Security) */}
-              <section className="bg-indigo-600 rounded-3xl p-8 text-white shadow-2xl flex flex-col justify-between relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110" />
-                <div className="space-y-3 relative z-10">
-                  <h2 className="text-3xl font-black leading-none tracking-tighter uppercase">{t.welcome}</h2>
-                  <p className="text-indigo-100 text-sm font-medium">{t.panicDescription}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-12 relative z-10">
-                  <button onClick={() => setView('SCAM')} className="bg-white/10 backdrop-blur-md p-6 rounded-3xl text-left hover:bg-white/20 transition-all border border-white/10 group/btn">
-                    <ShieldQuestion className="w-8 h-8 mb-3 transition-transform group-hover/btn:-rotate-12" />
-                    <p className="text-sm font-black">{t.analyzeScam}</p>
-                    <p className="text-[10px] text-indigo-200 mt-1">{t.scamDescription}</p>
-                  </button>
-                  <button onClick={() => callEmergencyService('190')} className="bg-white/10 backdrop-blur-md p-6 rounded-3xl text-left hover:bg-white/20 transition-all border border-white/10 group/btn">
-                    <Mic className="w-8 h-8 mb-3 transition-transform group-hover/btn:scale-110" />
-                    <p className="text-sm font-black">{t.emergency190}</p>
-                    <p className="text-[10px] text-indigo-200 mt-1">{t.emergencyDescription}</p>
-                  </button>
-                </div>
-              </section>
+                <section className="bg-indigo-600 rounded-3xl p-8 text-white shadow-2xl flex flex-col justify-between relative overflow-hidden group min-h-[300px]">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110" />
+                  <div className="space-y-3 relative z-10">
+                    <h2 className="text-3xl font-black leading-none tracking-tighter uppercase">{t.welcome}</h2>
+                    <p className="text-indigo-100 text-sm font-medium">{t.panicDescription}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-12 relative z-10">
+                    <button onClick={() => setView('SCAM')} className="bg-white/10 backdrop-blur-md p-6 rounded-3xl text-left hover:bg-white/20 transition-all border border-white/10 group/btn">
+                      <ShieldQuestion className="w-8 h-8 mb-3 transition-transform group-hover/btn:-rotate-12" />
+                      <p className="text-sm font-black">{t.analyzeScam}</p>
+                      <p className="text-[10px] text-indigo-200 mt-1">{t.scamDescription}</p>
+                    </button>
+                    <button onClick={() => callEmergencyService('190')} className="bg-white/10 backdrop-blur-md p-6 rounded-3xl text-left hover:bg-white/20 transition-all border border-white/10 group/btn">
+                      <Mic className="w-8 h-8 mb-3 transition-transform group-hover/btn:scale-110" />
+                      <p className="text-sm font-black">{t.emergency190}</p>
+                      <p className="text-[10px] text-indigo-200 mt-1">{t.emergencyDescription}</p>
+                    </button>
+                  </div>
+                </section>
 
-              {/* Block 2: Health */}
-              <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-8">
+                {/* Block 5: Financial Stability */}
+                <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-8">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-black flex items-center gap-2">
+                      <Briefcase className="w-6 h-6 text-amber-600" /> {t.financialStability}
+                    </h2>
+                  </div>
+
+                  <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 flex items-start gap-5">
+                    <div className="p-3 bg-white rounded-2xl shadow-sm">
+                      <ShieldAlert className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-black text-amber-900">{t.antiFraudShieldActive}</p>
+                      <p className="text-xs text-amber-700 leading-relaxed">{t.aiMonitoringDescription}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t.generalConsultancies}</h3>
+                      <Search className="w-4 h-4 text-slate-400 hover:text-indigo-600 cursor-pointer" />
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {services.length > 0 ? services.map(service => (
+                        <div key={service.id} className="p-5 border border-slate-100 rounded-3xl hover:border-indigo-200 transition-all cursor-pointer group bg-slate-50/50">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-[10px] font-bold bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 uppercase tracking-wider">{service.categoria}</span>
+                            <div className="flex items-center gap-1 text-emerald-600">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span className="text-[10px] font-bold">{t.safeLabel}</span>
+                            </div>
+                          </div>
+                          <p className="text-base font-black text-slate-800 mb-1">{service.titulo}</p>
+                          <p className="text-xs text-slate-500 leading-relaxed mb-4">{service.descricao}</p>
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <span className="text-sm font-black text-indigo-600">{service.preco}</span>
+                            <button className="text-[10px] font-black bg-slate-900 text-white px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-indigo-600 transition-colors">{t.hire}</button>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-[10px] font-bold bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 uppercase tracking-wider">{t.specialist}</span>
+                            <div className="flex items-center gap-1 text-emerald-600">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span className="text-[10px] font-bold">{t.verified}</span>
+                            </div>
+                          </div>
+                          <p className="text-base font-black text-slate-800 mb-1">{t.strategicConsultancy}</p>
+                          <p className="text-xs text-slate-500 leading-relaxed mb-4">{t.consultancyDescription}</p>
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <span className="text-sm font-black text-indigo-600">{t.toBeAgreed}</span>
+                            <button className="text-[10px] font-black bg-slate-900 text-white px-4 py-2 rounded-xl uppercase tracking-widest">{t.learnMore}</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="space-y-8">
+                {/* Block 2: Health */}
+                <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-8">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-black flex items-center gap-2">
                     <Heart className="w-6 h-6 text-rose-600" /> {t.healthWellness}
@@ -3177,7 +3340,10 @@ export default function App() {
                                 {pharmacy.distance}
                               </span>
                             )}
-                            <ExternalLink className="w-4 h-4 text-slate-300" />
+                            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-indigo-600 transition-colors">
+                              <span>{t.openInGoogleMaps || "Ver no Mapa"}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </div>
                           </div>
                         </a>
                       ))}
@@ -3213,7 +3379,10 @@ export default function App() {
                                 {unit.distance}
                               </span>
                             )}
-                            <ExternalLink className="w-4 h-4 text-slate-300" />
+                            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-rose-600 transition-colors">
+                              <span>{t.openInGoogleMaps || "Ver no Mapa"}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </div>
                           </div>
                         </a>
                       ))}
@@ -3242,7 +3411,10 @@ export default function App() {
                   ].map((cat) => (
                     <button
                       key={cat.id}
-                      onClick={() => setLeisureCategory(cat.id as any)}
+                      onClick={() => {
+                        setLeisureCategory(cat.id as any);
+                        setLeisureSubCategory('');
+                      }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                         leisureCategory === cat.id 
                           ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' 
@@ -3254,6 +3426,39 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+
+                {leisureCategory === 'restaurant' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                  >
+                    <div className="flex items-center gap-2 text-indigo-600">
+                      <Search className="w-4 h-4" />
+                      <span className="text-xs font-bold uppercase tracking-wider">{t.advancedSearch}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor="food-type" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        {t.foodType}
+                      </label>
+                      <select
+                        id="food-type"
+                        value={leisureSubCategory}
+                        onChange={(e) => setLeisureSubCategory(e.target.value)}
+                        className="w-full p-3 bg-white rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none focus:border-indigo-300 transition-all cursor-pointer"
+                      >
+                        <option value="">{t.allTypes}</option>
+                        <option value="italian">{t.italian}</option>
+                        <option value="japanese">{t.japanese}</option>
+                        <option value="brazilian">{t.brazilian}</option>
+                        <option value="fastFood">{t.fastFood}</option>
+                        <option value="healthy">{t.healthy}</option>
+                        <option value="pizza">{t.pizza}</option>
+                        <option value="seafood">{t.seafood}</option>
+                      </select>
+                    </div>
+                  </motion.div>
+                )}
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -3310,68 +3515,8 @@ export default function App() {
                   </div>
                 </div>
               </section>
-
-              {/* Block 4: Financial Stability */}
-              <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 space-y-8">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-black flex items-center gap-2">
-                    <Briefcase className="w-6 h-6 text-amber-600" /> {t.financialStability}
-                  </h2>
-                </div>
-
-                <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 flex items-start gap-5">
-                  <div className="p-3 bg-white rounded-2xl shadow-sm">
-                    <ShieldAlert className="w-6 h-6 text-amber-600" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-black text-amber-900">{t.antiFraudShieldActive}</p>
-                    <p className="text-xs text-amber-700 leading-relaxed">{t.aiMonitoringDescription}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t.generalConsultancies}</h3>
-                    <Search className="w-4 h-4 text-slate-400 hover:text-indigo-600 cursor-pointer" />
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {services.length > 0 ? services.map(service => (
-                      <div key={service.id} className="p-5 border border-slate-100 rounded-3xl hover:border-indigo-200 transition-all cursor-pointer group bg-slate-50/50">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-[10px] font-bold bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 uppercase tracking-wider">{service.categoria}</span>
-                          <div className="flex items-center gap-1 text-emerald-600">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span className="text-[10px] font-bold">{t.safeLabel}</span>
-                          </div>
-                        </div>
-                        <p className="text-base font-black text-slate-800 mb-1">{service.titulo}</p>
-                        <p className="text-xs text-slate-500 leading-relaxed mb-4">{service.descricao}</p>
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                          <span className="text-sm font-black text-indigo-600">{service.preco}</span>
-                          <button className="text-[10px] font-black bg-slate-900 text-white px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-indigo-600 transition-colors">{t.hire}</button>
-                        </div>
-                      </div>
-                    )) : (
-                      <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-[10px] font-bold bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 uppercase tracking-wider">{t.specialist}</span>
-                          <div className="flex items-center gap-1 text-emerald-600">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span className="text-[10px] font-bold">{t.verified}</span>
-                          </div>
-                        </div>
-                        <p className="text-base font-black text-slate-800 mb-1">{t.strategicConsultancy}</p>
-                        <p className="text-xs text-slate-500 leading-relaxed mb-4">{t.consultancyDescription}</p>
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                          <span className="text-sm font-black text-indigo-600">{t.toBeAgreed}</span>
-                          <button className="text-[10px] font-black bg-slate-900 text-white px-4 py-2 rounded-xl uppercase tracking-widest">{t.learnMore}</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-            </motion.div>
+            </div>
+          </motion.div>
           )}
 
           {view === 'SCAM' && (
