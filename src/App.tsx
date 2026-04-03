@@ -49,6 +49,11 @@ interface AnalysisResult {
   timestamp: number;
 }
 
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  LineChart, Line, PieChart, Pie, Cell, Legend 
+} from 'recharts';
+
 interface Alerta {
   id?: string;
   tipo: string;
@@ -119,6 +124,24 @@ interface UserProfile {
   paymentMethod?: string;
   isAdmin: boolean;
   isVip?: boolean;
+  timestamp: number;
+}
+
+interface Transaction {
+  id?: string;
+  uid: string;
+  userEmail: string;
+  valor: number;
+  moeda: string;
+  tipo: 'assinatura_mensal' | 'assinatura_anual';
+  status: 'concluido' | 'pendente' | 'falhou';
+  timestamp: number;
+}
+
+interface UsageLog {
+  id?: string;
+  uid: string;
+  modulo: 'golpes' | 'emergencia' | 'rota_segura' | 'saude' | 'talentos';
   timestamp: number;
 }
 
@@ -314,6 +337,13 @@ const translations = {
     setFree: "Definir como Grátis",
     userUpdated: "Usuário atualizado com sucesso!",
     vipBadge: "VIP",
+    financeMetrics: "Financeiro & Métricas",
+    revenue: "Receita Total",
+    activeSubscribers: "Assinantes Ativos",
+    modulePopularity: "Popularidade dos Módulos",
+    revenueOverTime: "Receita ao Longo do Tempo",
+    usageLogs: "Logs de Uso",
+    noData: "Sem dados para exibir.",
     pharmacyPrompt: "Quais são as 3 farmácias mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
     unitsPrompt: "Quais são as 5 unidades de saúde (UPAs, postos de saúde, hospitais, policlínicas) mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
     leisurePrompt: "Quais são os 3 {category} mais próximos de mim? Elenque-os no formato 'Nome (Distância) [Avaliação]'. A avaliação deve ser um número de 0 a 5.",
@@ -585,6 +615,13 @@ const translations = {
     setFree: "Set as Free",
     userUpdated: "User updated successfully!",
     vipBadge: "VIP",
+    financeMetrics: "Finance & Metrics",
+    revenue: "Total Revenue",
+    activeSubscribers: "Active Subscribers",
+    modulePopularity: "Module Popularity",
+    revenueOverTime: "Revenue Over Time",
+    usageLogs: "Usage Logs",
+    noData: "No data to display.",
     pharmacyPrompt: "What are the 3 nearest pharmacies to me? List them in the format 'Name (Distance)'.",
     unitsPrompt: "What are the 5 nearest health units (UPAs, health centers, hospitals, polyclinics) to me? List them in the format 'Name (Distance)'.",
     leisurePrompt: "What are the 3 nearest {category} to me? List them in the format 'Name (Distance) [Rating]'. The rating should be a number from 0 to 5.",
@@ -2186,6 +2223,8 @@ export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [usageLogs, setUsageLogs] = useState<UsageLog[]>([]);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const isAdmin = user?.email === 'gersonproenca@gmail.com' || userProfile?.isAdmin === true;
   const [showCheckout, setShowCheckout] = useState(false);
@@ -2234,9 +2273,17 @@ export default function App() {
         },
         (error) => {
           console.error("Error getting location for car:", error);
-          showToast("Erro ao obter localização atual.", "error");
-        }
+          let errorMsg = "Erro ao obter localização atual.";
+          if (error.code === 1) errorMsg = "Permissão de localização negada pelo navegador.";
+          else if (error.code === 2) errorMsg = "Localização indisponível no momento.";
+          else if (error.code === 3) errorMsg = "Tempo esgotado ao tentar obter localização.";
+          
+          showToast(errorMsg, "error");
+        },
+        { timeout: 10000, enableHighAccuracy: true }
       );
+    } else {
+      showToast("Seu navegador não suporta geolocalização.", "error");
     }
   };
 
@@ -2256,10 +2303,11 @@ export default function App() {
   const [services, setServices] = useState<TalentService[]>([]);
   const [isWalking, setIsWalking] = useState(false);
   const toggleWalking = () => {
-    if (userProfile?.plan !== 'pro') {
+    if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true) {
       setShowCheckout(true);
       return;
     }
+    if (!isWalking) logModuleUsage('rota_segura');
     setIsWalking(!isWalking);
   };
   const [heartRate, setHeartRate] = useState(72);
@@ -2286,6 +2334,7 @@ export default function App() {
   const fetchNearbyPharmacies = async () => {
     setIsFetchingPharmacies(true);
     setPharmacies([]);
+    logModuleUsage('saude');
     try {
       let currentLat = -23.9618;
       let currentLng = -46.3322;
@@ -2353,6 +2402,7 @@ export default function App() {
   const fetchNearbyUnits = async () => {
     setIsFetchingUnits(true);
     setHealthUnitsList([]);
+    logModuleUsage('saude');
     try {
       let currentLat = -23.9618;
       let currentLng = -46.3322;
@@ -2429,6 +2479,7 @@ export default function App() {
   const fetchNearbyLeisure = async (category: string, subCategory?: string) => {
     setIsFetchingLeisure(true);
     setLeisureList([]);
+    logModuleUsage('talentos');
     try {
       let currentLat = -23.9618;
       let currentLng = -46.3322;
@@ -2556,6 +2607,7 @@ export default function App() {
   const calculateSafeRoute = async () => {
     if (!destination.trim() || !origin.trim()) return;
     setIsCalculatingRoute(true);
+    logModuleUsage('rota_segura');
     setSafeRouteSuggestion(null);
     setMapUrl(null);
     
@@ -2787,11 +2839,28 @@ export default function App() {
       paymentMethod: 'Cartão de Crédito (Visa **** 4242)'
     };
     
-    await updateDoc(userRef, subData);
-    setUserProfile(prev => prev ? { ...prev, ...subData } : null);
-    setIsProcessingPurchase(false);
-    setShowCheckout(false);
-    showToast(t.purchaseSuccess, "success");
+    try {
+      await updateDoc(userRef, subData);
+      
+      // Record Financial Transaction
+      await addDoc(collection(db, 'transacoes'), {
+        uid: user.uid,
+        userEmail: user.email,
+        valor: selectedPeriod === 'monthly' ? 9.90 : 99.00,
+        moeda: 'BRL',
+        tipo: selectedPeriod === 'monthly' ? 'assinatura_mensal' : 'assinatura_anual',
+        status: 'concluido',
+        timestamp: Date.now()
+      });
+
+      setUserProfile(prev => prev ? { ...prev, ...subData } : null);
+      setIsProcessingPurchase(false);
+      setShowCheckout(false);
+      showToast(t.purchaseSuccess, "success");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
+      setIsProcessingPurchase(false);
+    }
   };
 
   const updateUserRole = async (targetUid: string, isAdminStatus: boolean) => {
@@ -2823,6 +2892,19 @@ export default function App() {
       showToast(t.userUpdated, 'success');
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `users/${targetUid}`);
+    }
+  };
+
+  const logModuleUsage = async (modulo: UsageLog['modulo']) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'logs_uso'), {
+        uid: user.uid,
+        modulo,
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.error("Error logging usage:", err);
     }
   };
 
@@ -2901,6 +2983,8 @@ export default function App() {
     // Admin Alerts Monitoring
     let unsubAlerts = () => {};
     let unsubUsers = () => {};
+    let unsubTransactions = () => {};
+    let unsubLogs = () => {};
 
     if (isAdmin) {
       const qAlerts = query(collection(db, 'alertas'), orderBy('timestamp', 'desc'), limit(20));
@@ -2912,6 +2996,16 @@ export default function App() {
       unsubUsers = onSnapshot(qUsers, (snapshot) => {
         setAllUsers(snapshot.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile)));
       }, (err) => handleFirestoreError(err, OperationType.LIST, 'users'));
+
+      const qTransactions = query(collection(db, 'transacoes'), orderBy('timestamp', 'desc'));
+      unsubTransactions = onSnapshot(qTransactions, (snapshot) => {
+        setTransactions(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Transaction)));
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'transacoes'));
+
+      const qLogs = query(collection(db, 'logs_uso'), orderBy('timestamp', 'desc'), limit(1000));
+      unsubLogs = onSnapshot(qLogs, (snapshot) => {
+        setUsageLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as UsageLog)));
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'logs_uso'));
     }
 
     return () => {
@@ -2920,6 +3014,8 @@ export default function App() {
       unsubServices();
       unsubAlerts();
       unsubUsers();
+      unsubTransactions();
+      unsubLogs();
     };
   }, [user, isAdmin]);
 
@@ -3013,6 +3109,7 @@ export default function App() {
   const callEmergencyService = async (service: string) => {
     if (!user) return;
     setIsListeningAudio(true);
+    logModuleUsage('emergencia');
     const path = 'alertas';
     try {
       const activeContacts = safeContacts.filter(c => c.active).map(c => c.name).join(', ');
@@ -3062,11 +3159,12 @@ export default function App() {
 
   const analyzeAudio = async () => {
     if (!audioFile || !user) return;
-    if (userProfile?.plan !== 'pro') {
+    if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true) {
       setShowCheckout(true);
       return;
     }
     setIsAnalyzingAudio(true);
+    logModuleUsage('emergencia');
     try {
       // Simulation of audio analysis with Gemini
       const model = "gemini-3-flash-preview";
@@ -3132,6 +3230,7 @@ export default function App() {
   const analyzeMessage = async () => {
     if (!inputText.trim()) return;
     setIsAnalyzing(true);
+    logModuleUsage('golpes');
     try {
       const model = "gemini-3-flash-preview";
       const response = await genAI.models.generateContent({
@@ -4560,15 +4659,90 @@ export default function App() {
           )}
 
           {view === 'PAINEL' && isAdmin && (
-            <motion.div key="painel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">{t.controlPanel}</h2>
-                <span className="px-4 py-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
-                  Monitoramento Ativo
-                </span>
+          <motion.div key="painel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">{t.controlPanel}</h2>
+              <span className="px-4 py-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
+                Monitoramento Ativo
+              </span>
+            </div>
+
+            {/* Financial & Metrics Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] shadow-sm border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.revenue}</p>
+                <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                  R$ {transactions.reduce((acc, curr) => acc + curr.valor, 0).toFixed(2)}
+                </h3>
+              </div>
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] shadow-sm border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.activeSubscribers}</p>
+                <h3 className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                  {allUsers.filter(u => u.plan === 'pro').length}
+                </h3>
+              </div>
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] shadow-sm border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Logs</p>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-slate-100">
+                  {usageLogs.length}
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Revenue Chart */}
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] shadow-xl border border-slate-100 dark:border-slate-800">
+                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">{t.revenueOverTime}</h3>
+                <div className="h-[300px] w-full">
+                  {transactions.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={transactions.slice().reverse().map(t => ({
+                        date: new Date(t.timestamp).toLocaleDateString(),
+                        valor: t.valor
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
+                        <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                        <Tooltip 
+                          contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Line type="monotone" dataKey="valor" stroke="#4f46e5" strokeWidth={4} dot={{ r: 4, fill: '#4f46e5' }} activeDot={{ r: 8 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400 text-xs font-bold">{t.noData}</div>
+                  )}
+                </div>
               </div>
 
-              {/* User Management Section */}
+              {/* Module Usage Chart */}
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] shadow-xl border border-slate-100 dark:border-slate-800">
+                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">{t.modulePopularity}</h3>
+                <div className="h-[300px] w-full">
+                  {usageLogs.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={Object.entries(usageLogs.reduce((acc: any, curr) => {
+                        acc[curr.modulo] = (acc[curr.modulo] || 0) + 1;
+                        return acc;
+                      }, {})).map(([name, value]) => ({ name: t[name as keyof typeof t] || name, value }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                        <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                        <Tooltip 
+                          cursor={{ fill: '#f8fafc' }}
+                          contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400 text-xs font-bold">{t.noData}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* User Management Section */}
               <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl">

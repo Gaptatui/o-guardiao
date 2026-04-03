@@ -107,6 +107,32 @@
         },
         "updatedAt": { "type": "number" }
       }
+    },
+    "TransacaoFinanceira": {
+      "title": "Transação Financeira",
+      "description": "Registro de pagamentos e assinaturas.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "valor": { "type": "number" },
+        "moeda": { "type": "string" },
+        "tipo": { "type": "string", "enum": ["assinatura_mensal", "assinatura_anual"] },
+        "status": { "type": "string", "enum": ["concluido", "pendente", "falhou"] },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["uid", "valor", "tipo", "status", "timestamp"]
+    },
+    "UsoModulo": {
+      "title": "Uso de Módulo",
+      "description": "Log de utilização de funcionalidades do app.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "modulo": { "type": "string", "enum": ["golpes", "emergencia", "rota_segura", "saude", "talentos"] },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["modulo", "timestamp"]
     }
   },
   "firestore": {
@@ -137,6 +163,14 @@
     "mercado_talentos/{servicoId}": {
       "schema": "ServicoTalento",
       "description": "Serviços oferecidos na comunidade."
+    },
+    "transacoes/{transacaoId}": {
+      "schema": "TransacaoFinanceira",
+      "description": "Histórico de pagamentos do aplicativo."
+    },
+    "logs_uso/{logId}": {
+      "schema": "UsoModulo",
+      "description": "Logs de utilização para análise de métricas."
     }
   }
 }
