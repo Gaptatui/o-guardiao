@@ -10,10 +10,10 @@ import {
   Info, History, Trash2, Mic, FileAudio, LayoutDashboard, 
   User, LogIn, LogOut, Bell, Clock, MapPin, Activity, Car,
   Heart, Zap, Users, Navigation, QrCode, Pill, Briefcase,
-  Search, Plus, CheckCircle2, XCircle, AlertCircle, ChevronRight,
+  Search, Plus, CheckCircle2, XCircle, AlertCircle, ChevronRight, ChevronLeft,
   ExternalLink, Clapperboard, ShoppingBag, Theater, Beer, Utensils,
   ShoppingBasket, Store, Menu, Star, Moon, Sun, HelpCircle,
-  PlusCircle, BarChart3, RefreshCw, Sparkles, Edit2
+  PlusCircle, BarChart3, RefreshCw, Sparkles, Edit2, Edit
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -41,6 +41,17 @@ const parseDistance = (distStr: string | null): number => {
     value *= 1000;
   }
   return value;
+};
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  try {
+    const [year, month, day] = dateStr.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString();
+  } catch (e) {
+    return dateStr;
+  }
 };
 
 interface AnalysisResult {
@@ -93,6 +104,9 @@ interface Medication {
   horario: string;
   dosagem: string;
   uid: string;
+  usoContinuo?: boolean;
+  dataInicio?: string;
+  dataFim?: string;
 }
 
 interface TalentService {
@@ -317,6 +331,21 @@ const translations = {
     universalWallet: "Carteira Universal",
     qrCodeDescription: "QR Code criptografado com seu histórico vital para socorristas.",
     manageMedicalData: "Gerenciar Dados Médicos",
+    manageMedications: "Gerenciar Medicamentos",
+    addMedication: "Adicionar Medicamento",
+    editMedication: "Editar Medicamento",
+    deleteMedication: "Excluir Medicamento",
+    medicationName: "Nome do Medicamento",
+    medicationTime: "Horário",
+    medicationDosage: "Dosagem",
+    continuousUse: "Uso Contínuo",
+    startDate: "Data de Início",
+    endDate: "Data de Fim",
+    medicationSaved: "Medicamento salvo com sucesso!",
+    medicationDeleted: "Medicamento excluído!",
+    medicationAlarm: "Hora do Medicamento!",
+    takeNow: "Tomar Agora",
+    noMedications: "Nenhum medicamento cadastrado.",
     nearbyUnits: "Unidades de Saúde Próximas em Santos",
     nearbyPharmacies: "Farmácias Próximas",
     findPharmacies: "Buscar Farmácias",
@@ -676,6 +705,21 @@ const translations = {
     universalWallet: "Universal Wallet",
     qrCodeDescription: "Encrypted QR Code with your vital history for responders.",
     manageMedicalData: "Manage Medical Data",
+    manageMedications: "Manage Medications",
+    addMedication: "Add Medication",
+    editMedication: "Edit Medication",
+    deleteMedication: "Delete Medication",
+    medicationName: "Medication Name",
+    medicationTime: "Time",
+    medicationDosage: "Dosage",
+    continuousUse: "Continuous Use",
+    startDate: "Start Date",
+    endDate: "End Date",
+    medicationSaved: "Medication saved successfully!",
+    medicationDeleted: "Medication deleted!",
+    medicationAlarm: "Time for Medication!",
+    takeNow: "Take Now",
+    noMedications: "No medications registered.",
     nearbyUnits: "Nearby Health Units in Santos",
     nearbyPharmacies: "Nearby Pharmacies",
     findPharmacies: "Find Pharmacies",
@@ -1025,6 +1069,21 @@ const translations = {
     universalWallet: "Billetera Universal",
     qrCodeDescription: "Código QR cifrado con su historial vital para socorristas.",
     manageMedicalData: "Gestionar Datos Médicos",
+    manageMedications: "Gestionar Medicamentos",
+    addMedication: "Agregar Medicamento",
+    editMedication: "Editar Medicamento",
+    deleteMedication: "Eliminar Medicamento",
+    medicationName: "Nombre del Medicamento",
+    medicationTime: "Horario",
+    medicationDosage: "Dosificación",
+    continuousUse: "Uso Continuo",
+    startDate: "Fecha de Inicio",
+    endDate: "Fecha de Fin",
+    medicationSaved: "¡Medicamento guardado con éxito!",
+    medicationDeleted: "¡Medicamento eliminado!",
+    medicationAlarm: "¡Hora del Medicamento!",
+    takeNow: "Tomar Ahora",
+    noMedications: "Ningún medicamento registrado.",
     nearbyUnits: "Unidades de Salud Cercanas en Santos",
     nearbyPharmacies: "Farmacias Cercanas",
     findPharmacies: "Buscar Farmacias",
@@ -1273,6 +1332,21 @@ const translations = {
     universalWallet: "Portefeuille universel",
     qrCodeDescription: "Code QR crypté avec votre historique vital pour les secouristes.",
     manageMedicalData: "Gérer les données médicales",
+    manageMedications: "Gérer les médicaments",
+    addMedication: "Ajouter un médicament",
+    editMedication: "Modifier le médicament",
+    deleteMedication: "Supprimer le médicament",
+    medicationName: "Nom du médicament",
+    medicationTime: "Heure",
+    medicationDosage: "Dosage",
+    continuousUse: "Usage Continu",
+    startDate: "Date de début",
+    endDate: "Date de fin",
+    medicationSaved: "Médicament enregistré avec succès !",
+    medicationDeleted: "Médicament supprimé !",
+    medicationAlarm: "L'heure du médicament !",
+    takeNow: "Prendre maintenant",
+    noMedications: "Aucun médicament enregistré.",
     nearbyUnits: "Unités de santé à proximité à Santos",
     nearbyPharmacies: "Pharmacies à proximité",
     findPharmacies: "Trouver des pharmacies",
@@ -1519,6 +1593,21 @@ const translations = {
     universalWallet: "Universelle Brieftasche",
     qrCodeDescription: "Verschlüsselter QR-Code mit Ihrer Vitalhistorie für Ersthelfer.",
     manageMedicalData: "Medizinische Daten verwalten",
+    manageMedications: "Medikamente verwalten",
+    addMedication: "Medikament hinzufügen",
+    editMedication: "Medikament bearbeiten",
+    deleteMedication: "Medikament löschen",
+    medicationName: "Name des Medikaments",
+    medicationTime: "Uhrzeit",
+    medicationDosage: "Dosierung",
+    continuousUse: "Dauernutzung",
+    startDate: "Startdatum",
+    endDate: "Enddatum",
+    medicationSaved: "Medikament erfolgreich gespeichert!",
+    medicationDeleted: "Medikament gelöscht!",
+    medicationAlarm: "Zeit für Medikamente!",
+    takeNow: "Jetzt einnehmen",
+    noMedications: "Keine Medikamente registriert.",
     nearbyUnits: "Nahegelegene Gesundheitseinheiten in Santos",
     nearbyPharmacies: "Apotheken in der Nähe",
     findPharmacies: "Apotheken finden",
@@ -1767,6 +1856,21 @@ const translations = {
     universalWallet: "Portafoglio universale",
     qrCodeDescription: "Codice QR crittografato with la tua storia vitale per i soccorritori.",
     manageMedicalData: "Gestisci dati medici",
+    manageMedications: "Gestisci farmaci",
+    addMedication: "Aggiungi farmaco",
+    editMedication: "Modifica farmaco",
+    deleteMedication: "Elimina farmaco",
+    medicationName: "Nome del farmaco",
+    medicationTime: "Orario",
+    medicationDosage: "Dosaggio",
+    continuousUse: "Uso Continuo",
+    startDate: "Data di Inizio",
+    endDate: "Data di Fine",
+    medicationSaved: "Farmaco salvato con successo!",
+    medicationDeleted: "Farmaco eliminato!",
+    medicationAlarm: "Ora del farmaco!",
+    takeNow: "Prendi ora",
+    noMedications: "Nessun farmaco registrato.",
     nearbyUnits: "Unità sanitarie vicine a Santos",
     nearbyPharmacies: "Farmacie vicine",
     findPharmacies: "Trova farmacie",
@@ -2013,6 +2117,21 @@ const translations = {
     universalWallet: "Universele portemonnee",
     qrCodeDescription: "Gecodeerde QR-code met uw vitale geschiedenis voor hulpverleners.",
     manageMedicalData: "Medische gegevens beheren",
+    manageMedications: "Medicijnen beheren",
+    addMedication: "Medicijn toevoegen",
+    editMedication: "Medicijn bewerken",
+    deleteMedication: "Medicijn verwijderen",
+    medicationName: "Naam van medicijn",
+    medicationTime: "Tijdstip",
+    medicationDosage: "Dosering",
+    continuousUse: "Continu Gebruik",
+    startDate: "Startdatum",
+    endDate: "Einddatum",
+    medicationSaved: "Medicijn succesvol opgeslagen!",
+    medicationDeleted: "Medicijn verwijderd!",
+    medicationAlarm: "Tijd voor medicijnen!",
+    takeNow: "Nu innemen",
+    noMedications: "Geen medicijnen geregistreerd.",
     nearbyUnits: "Nabijgelegen gezondheidseenheden in Santos",
     nearbyPharmacies: "Apotheken in de buurt",
     findPharmacies: "Apotheken zoeken",
@@ -2259,6 +2378,21 @@ const translations = {
     universalWallet: "通用钱包",
     qrCodeDescription: "为救援人员准备的包含您生命史的加密二维码。",
     manageMedicalData: "管理医疗数据",
+    manageMedications: "管理药物",
+    addMedication: "添加药物",
+    editMedication: "编辑药物",
+    deleteMedication: "删除药物",
+    medicationName: "药物名称",
+    medicationTime: "时间",
+    medicationDosage: "剂量",
+    continuousUse: "持续使用",
+    startDate: "开始日期",
+    endDate: "结束日期",
+    medicationSaved: "药物保存成功！",
+    medicationDeleted: "药物已删除！",
+    medicationAlarm: "服药时间到了！",
+    takeNow: "现在服用",
+    noMedications: "没有登记的药物。",
     nearbyUnits: "桑托斯附近的卫生单位",
     nearbyPharmacies: "附近药店",
     findPharmacies: "查找药店",
@@ -2505,6 +2639,21 @@ const translations = {
     universalWallet: "ארנק אוניברסלי",
     qrCodeDescription: "קוד QR מוצפן עם ההיסטוריה הרפואית שלך למגיבים ראשונים.",
     manageMedicalData: "נהל נתונים רפואיים",
+    manageMedications: "נהל תרופות",
+    addMedication: "הוסף תרופה",
+    editMedication: "ערוך תרופה",
+    deleteMedication: "מחק תרופה",
+    medicationName: "שם התרופה",
+    medicationTime: "זמן",
+    medicationDosage: "מינון",
+    continuousUse: "שימוש מתמשך",
+    startDate: "תאריך התחלה",
+    endDate: "תאריך סיום",
+    medicationSaved: "התרופה נשמרה בהצלחה!",
+    medicationDeleted: "התרופה נמחקה!",
+    medicationAlarm: "זמן לתרופה!",
+    takeNow: "קח עכשיו",
+    noMedications: "לא רשומות תרופות.",
     nearbyUnits: "יחידות בריאות קרובות בסנטוס",
     nearbyPharmacies: "בתי מרקחת קרובים",
     findPharmacies: "חפש בתי מרקחת",
@@ -2627,7 +2776,7 @@ interface FirestoreErrorInfo {
 }
 
 export default function App() {
-  const [view, setView] = useState<'DASHBOARD' | 'SCAM' | 'EMERGENCY' | 'PAINEL' | 'SETTINGS' | 'FINANCEIRO'>('DASHBOARD');
+  const [view, setView] = useState<'DASHBOARD' | 'SCAM' | 'EMERGENCY' | 'PAINEL' | 'SETTINGS' | 'FINANCEIRO' | 'SAUDE'>('DASHBOARD');
   const [language, setLanguage] = useState<Language>('pt');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('guardian-theme');
@@ -2839,9 +2988,139 @@ export default function App() {
   };
   
   // Dashboard Data
+  const [newMedication, setNewMedication] = useState<Medication>({ 
+    nome: '', 
+    horario: '', 
+    dosagem: '', 
+    uid: '',
+    usoContinuo: true,
+    dataInicio: '',
+    dataFim: ''
+  });
+  const [isEditingMedication, setIsEditingMedication] = useState<string | null>(null);
+
+  const addMedication = async () => {
+    if (!user || !newMedication.nome || !newMedication.horario) {
+      showToast("Preencha o nome e o horário!", "error");
+      return;
+    }
+    try {
+      await addDoc(collection(db, 'lembretes_medicacao'), {
+        ...newMedication,
+        uid: user.uid,
+        timestamp: Date.now()
+      });
+      setNewMedication({ nome: '', horario: '', dosagem: '', uid: '', usoContinuo: true, dataInicio: '', dataFim: '' });
+      showToast(t.medicationSaved, "success");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'lembretes_medicacao');
+    }
+  };
+
+  const updateMedication = async () => {
+    if (!isEditingMedication) return;
+    try {
+      await updateDoc(doc(db, 'lembretes_medicacao', isEditingMedication), {
+        nome: newMedication.nome,
+        horario: newMedication.horario,
+        dosagem: newMedication.dosagem,
+        usoContinuo: newMedication.usoContinuo,
+        dataInicio: newMedication.dataInicio,
+        dataFim: newMedication.dataFim
+      });
+      setIsEditingMedication(null);
+      setNewMedication({ nome: '', horario: '', dosagem: '', uid: '', usoContinuo: true, dataInicio: '', dataFim: '' });
+      showToast(t.medicationSaved, "success");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `lembretes_medicacao/${isEditingMedication}`);
+    }
+  };
+
+  const deleteMedication = async (id: string) => {
+    setConfirmDialog({
+      title: t.deleteMedication,
+      message: t.confirmDelete,
+      onConfirm: async () => {
+        try {
+          await deleteDoc(doc(db, 'lembretes_medicacao', id));
+          showToast(t.medicationDeleted, "success");
+          setConfirmDialog(null);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.DELETE, `lembretes_medicacao/${id}`);
+        }
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
+  };
+
   const [neighborAlerts, setNeighborAlerts] = useState<NeighborAlert[]>([]);
   const [healthProfile, setHealthProfile] = useState<HealthProfile | null>(null);
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [activeAlarmMedication, setActiveAlarmMedication] = useState<Medication | null>(null);
+  const [lastAlarmTime, setLastAlarmTime] = useState<string | null>(null);
+
+  const playAlarmSound = () => {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      
+      const audioCtx = new AudioContextClass();
+      const playBeep = (freq: number, startTime: number, duration: number) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+        gainNode.gain.setValueAtTime(0.1, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+
+      playBeep(880, audioCtx.currentTime, 0.5);
+      playBeep(880, audioCtx.currentTime + 1, 0.5);
+      playBeep(880, audioCtx.currentTime + 2, 0.5);
+    } catch (e) {
+      console.error("Audio error:", e);
+    }
+  };
+
+  useEffect(() => {
+    const checkMedications = () => {
+      if (!medications.length) return;
+      
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const currentTime = `${hours}:${minutes}`;
+      const todayStr = now.toISOString().split('T')[0];
+
+      if (currentTime === lastAlarmTime) return;
+
+      medications.forEach(med => {
+        if (med.horario === currentTime) {
+          let shouldAlarm = false;
+          if (med.usoContinuo) {
+            shouldAlarm = true;
+          } else if (med.dataInicio && med.dataFim) {
+            if (todayStr >= med.dataInicio && todayStr <= med.dataFim) {
+              shouldAlarm = true;
+            }
+          }
+
+          if (shouldAlarm) {
+            setActiveAlarmMedication(med);
+            setLastAlarmTime(currentTime);
+            playAlarmSound();
+          }
+        }
+      });
+    };
+
+    const interval = setInterval(checkMedications, 15000);
+    return () => clearInterval(interval);
+  }, [medications, lastAlarmTime]);
   const [services, setServices] = useState<TalentService[]>([]);
   const [isWalking, setIsWalking] = useState(false);
   const toggleWalking = () => {
@@ -4728,8 +5007,17 @@ export default function App() {
                     <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.aiCheckup}</p>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-tight">{t.heartRateStable}</p>
                   </div>
-                  <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-3">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.nextMedication}</p>
+                  <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-3 relative group">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.nextMedication}</p>
+                      <button 
+                        onClick={() => setView('SAUDE')}
+                        className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors opacity-0 group-hover:opacity-100"
+                        title={t.manageMedications}
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
                     {medications.length > 0 ? (
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
@@ -4738,6 +5026,9 @@ export default function App() {
                         <div>
                           <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{medications[0].nome}</p>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400">{medications[0].horario} • {medications[0].dosagem}</p>
+                          <p className="text-[8px] text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-widest mt-0.5">
+                            {medications[0].usoContinuo ? t.continuousUse : `${formatDate(medications[0].dataInicio)} - ${formatDate(medications[0].dataFim)}`}
+                          </p>
                         </div>
                       </div>
                     ) : (
@@ -5476,6 +5767,169 @@ export default function App() {
                   {t.panicButton}
                 </button>
                 <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">{t.panicDescription}</p>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'SAUDE' && (
+            <motion.div key="saude" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setView('DASHBOARD')} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <ChevronLeft className="w-6 h-6 text-slate-400" />
+                  </button>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">{t.manageMedications}</h2>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800 space-y-6">
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl">
+                    <Pill className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">{isEditingMedication ? t.editMedication : t.addMedication}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Agenda de Medicamentos</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.medicationName}</label>
+                    <input 
+                      type="text" 
+                      value={newMedication.nome}
+                      onChange={(e) => setNewMedication({...newMedication, nome: e.target.value})}
+                      placeholder="Ex: Paracetamol"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.medicationTime}</label>
+                    <input 
+                      type="time" 
+                      value={newMedication.horario}
+                      onChange={(e) => setNewMedication({...newMedication, horario: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.medicationDosage}</label>
+                    <input 
+                      type="text" 
+                      value={newMedication.dosagem}
+                      onChange={(e) => setNewMedication({...newMedication, dosagem: e.target.value})}
+                      placeholder="Ex: 500mg, 1 comprimido"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="checkbox" 
+                      id="usoContinuo"
+                      checked={newMedication.usoContinuo}
+                      onChange={(e) => setNewMedication({...newMedication, usoContinuo: e.target.checked})}
+                      className="w-5 h-5 accent-indigo-600 rounded-lg"
+                    />
+                    <label htmlFor="usoContinuo" className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest cursor-pointer">
+                      {t.continuousUse}
+                    </label>
+                  </div>
+
+                  {!newMedication.usoContinuo && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.startDate}</label>
+                        <input 
+                          type="date" 
+                          value={newMedication.dataInicio}
+                          onChange={(e) => setNewMedication({...newMedication, dataInicio: e.target.value})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.endDate}</label>
+                        <input 
+                          type="date" 
+                          value={newMedication.dataFim}
+                          onChange={(e) => setNewMedication({...newMedication, dataFim: e.target.value})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <button 
+                    onClick={isEditingMedication ? updateMedication : addMedication}
+                    className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none"
+                  >
+                    {isEditingMedication ? t.update : t.save}
+                  </button>
+                  {isEditingMedication && (
+                    <button 
+                      onClick={() => {
+                        setIsEditingMedication(null);
+                        setNewMedication({ nome: '', horario: '', dosagem: '', uid: '' });
+                      }}
+                      className="px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                    >
+                      {t.cancel}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
+                  <History className="w-5 h-5 text-indigo-600" /> {t.medications}
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {medications.length > 0 ? medications.map((med) => (
+                    <div key={med.id} className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white dark:bg-slate-700 rounded-2xl shadow-sm">
+                          <Pill className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-slate-900 dark:text-slate-100">{med.nome}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">
+                            {med.horario} • {med.dosagem}
+                          </p>
+                          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-widest mt-1">
+                            {med.usoContinuo ? t.continuousUse : `${formatDate(med.dataInicio)} - ${formatDate(med.dataFim)}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => {
+                            setIsEditingMedication(med.id!);
+                            setNewMedication({ ...med });
+                          }}
+                          className="p-2 bg-white dark:bg-slate-700 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => deleteMedication(med.id!)}
+                          className="p-2 bg-white dark:bg-slate-700 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="col-span-full py-12 text-center">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">{t.noMedications}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
@@ -6612,6 +7066,40 @@ export default function App() {
                 className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-lg hover:bg-indigo-700 transition-all"
               >
                 {t.okUnderstood}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      {activeAlarmMedication && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] overflow-hidden shadow-2xl border-4 border-indigo-500"
+          >
+            <div className="p-10 text-center space-y-8">
+              <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <Pill className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tighter">
+                  {t.medicationAlarm}
+                </h3>
+                <div className="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">{activeAlarmMedication.nome}</p>
+                  <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">
+                    {activeAlarmMedication.dosagem} • {activeAlarmMedication.horario}
+                  </p>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setActiveAlarmMedication(null)}
+                className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all uppercase tracking-widest"
+              >
+                {t.takeNow}
               </button>
             </div>
           </motion.div>
