@@ -12,7 +12,8 @@ import {
   Heart, Zap, Users, Navigation, QrCode, Pill, Briefcase,
   Search, Plus, CheckCircle2, XCircle, AlertCircle, ChevronRight,
   ExternalLink, Clapperboard, ShoppingBag, Theater, Beer, Utensils,
-  ShoppingBasket, Store, Menu, Star, Moon, Sun, HelpCircle
+  ShoppingBasket, Store, Menu, Star, Moon, Sun, HelpCircle,
+  PlusCircle, BarChart3, RefreshCw, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -142,7 +143,37 @@ interface Transaction {
 interface UsageLog {
   id?: string;
   uid: string;
-  modulo: 'golpes' | 'emergencia' | 'rota_segura' | 'saude' | 'talentos';
+  modulo: 'golpes' | 'emergencia' | 'rota_segura' | 'saude' | 'talentos' | 'financeiro';
+  timestamp: number;
+}
+
+interface Expense {
+  id?: string;
+  descricao: string;
+  valor: number;
+  tipo: 'fixo' | 'variavel';
+  categoria: string;
+  data: string;
+  uid: string;
+  timestamp: number;
+}
+
+interface Debt {
+  id?: string;
+  credor: string;
+  valorTotal: number;
+  taxaJuros: number;
+  vencimento: string;
+  uid: string;
+  timestamp: number;
+}
+
+interface FinancialProject {
+  id?: string;
+  plano: string;
+  dicas: string[];
+  metas: string[];
+  uid: string;
   timestamp: number;
 }
 
@@ -298,6 +329,45 @@ const translations = {
     findLeisure: "Encontrar Lazer",
     cinema: "Cinema",
     mall: "Shopping",
+    financial: "Financeiro",
+    financialDescription: "Controle de gastos e saúde financeira",
+    fixedExpenses: "Gastos Fixos",
+    variableExpenses: "Gastos Variáveis",
+    addExpense: "Adicionar Gasto",
+    description: "Descrição",
+    value: "Valor",
+    category: "Categoria",
+    date: "Data",
+    type: "Tipo",
+    fixed: "Fixo",
+    variable: "Variável",
+    totalExpenses: "Total de Gastos",
+    consolidatedExpenses: "Gastos Consolidados",
+    debts: "Dívidas",
+    creditor: "Credor",
+    totalValue: "Valor Total",
+    interestRate: "Taxa de Juros (%)",
+    dueDate: "Vencimento",
+    addDebt: "Adicionar Dívida",
+    financialProject: "Projeto Financeiro",
+    generateProject: "Gerar Projeto de Saúde Financeira",
+    financingSearch: "Buscar Melhores Taxas de Financiamento",
+    debtConsolidation: "Consolidação de Dívidas",
+    financialHealthPlan: "Plano de Saúde Financeira",
+    tips: "Dicas",
+    goals: "Metas",
+    proFeature: "Funcionalidade PRO",
+    upgradeToProFinance: "Assine o PRO para consolidar dívidas e gerar seu plano financeiro personalizado.",
+    financingOptions: "Opções de Financiamento",
+    bestRates: "Melhores Taxas Encontradas",
+    bank: "Banco/Instituição",
+    rate: "Taxa",
+    conditions: "Condições",
+    financialSummary: "Resumo Financeiro",
+    noExpenses: "Nenhum gasto registrado.",
+    noDebts: "Nenhuma dívida registrada.",
+    generatingProject: "Gerando seu projeto financeiro com IA...",
+    searchingRates: "Buscando melhores taxas no mercado...",
     theater: "Teatro",
     bar: "Bar",
     restaurant: "Restaurante",
@@ -2272,7 +2342,7 @@ interface FirestoreErrorInfo {
 }
 
 export default function App() {
-  const [view, setView] = useState<'DASHBOARD' | 'SCAM' | 'EMERGENCY' | 'PAINEL' | 'SETTINGS'>('DASHBOARD');
+  const [view, setView] = useState<'DASHBOARD' | 'SCAM' | 'EMERGENCY' | 'PAINEL' | 'SETTINGS' | 'FINANCEIRO'>('DASHBOARD');
   const [language, setLanguage] = useState<Language>('pt');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('guardian-theme');
@@ -2326,6 +2396,12 @@ export default function App() {
   });
   const [showSignLanguage, setShowSignLanguage] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [financialProject, setFinancialProject] = useState<FinancialProject | null>(null);
+  const [isGeneratingProject, setIsGeneratingProject] = useState(false);
+  const [isSearchingRates, setIsSearchingRates] = useState(false);
+  const [financingOptions, setFinancingOptions] = useState<any[]>([]);
   const [showShortcutSuggestion, setShowShortcutSuggestion] = useState(false);
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
   const [os, setOs] = useState<'ios' | 'android' | 'other'>('other');
@@ -2379,7 +2455,30 @@ export default function App() {
       const unsub = onSnapshot(q, (snapshot) => {
         setEmergencyContacts(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       });
-      return unsub;
+
+      const qExpenses = query(collection(db, 'gastos'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'));
+      const unsubExpenses = onSnapshot(qExpenses, (snapshot) => {
+        setExpenses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense)));
+      });
+
+      const qDebts = query(collection(db, 'dividas'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'));
+      const unsubDebts = onSnapshot(qDebts, (snapshot) => {
+        setDebts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Debt)));
+      });
+
+      const qProject = query(collection(db, 'projetos_financeiros'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'), limit(1));
+      const unsubProject = onSnapshot(qProject, (snapshot) => {
+        if (!snapshot.empty) {
+          setFinancialProject({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as FinancialProject);
+        }
+      });
+
+      return () => {
+        unsub();
+        unsubExpenses();
+        unsubDebts();
+        unsubProject();
+      };
     }
   }, [user]);
 
@@ -2546,6 +2645,8 @@ export default function App() {
   const [leisureCache, setLeisureCache] = useState<Record<string, any[]>>({});
   const [leisureCategory, setLeisureCategory] = useState<'cinema' | 'mall' | 'theater' | 'bar' | 'restaurant' | 'supermarket' | 'bakery'>('cinema');
   const [leisureSubCategory, setLeisureSubCategory] = useState<string>('');
+  const [newExpense, setNewExpense] = useState({ descricao: '', valor: 0, categoria: 'Variável' as 'Fixa' | 'Variável' });
+  const [newDebt, setNewDebt] = useState({ credor: '', valor: 0, taxaJuros: 0 });
   const [alertasList, setAlertasList] = useState<Alerta[]>([]);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -2914,6 +3015,113 @@ export default function App() {
       showToast("Contato removido.", "info");
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, 'contatos_emergencia');
+    }
+  };
+
+  // Financial Logic
+  const addExpense = async (expense: Omit<Expense, 'id' | 'uid' | 'timestamp'>) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'gastos'), {
+        ...expense,
+        uid: user.uid,
+        timestamp: Date.now()
+      });
+      showToast(t.save, 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'gastos');
+    }
+  };
+
+  const addDebt = async (debt: Omit<Debt, 'id' | 'uid' | 'timestamp'>) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'dividas'), {
+        ...debt,
+        uid: user.uid,
+        timestamp: Date.now()
+      });
+      showToast(t.save, 'success');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'dividas');
+    }
+  };
+
+  const generateFinancialProject = async () => {
+    if (!user || expenses.length === 0) {
+      showToast(t.noExpenses, 'info');
+      return;
+    }
+    setIsGeneratingProject(true);
+    try {
+      const prompt = `Como um consultor financeiro especializado, analise os seguintes dados financeiros e crie um plano de saúde financeira detalhado para quitar dívidas em curto prazo e melhorar a vida financeira.
+      
+      Gastos: ${JSON.stringify(expenses)}
+      Dívidas: ${JSON.stringify(debts)}
+      
+      Retorne um objeto JSON com:
+      - plano: string (descrição geral do plano)
+      - dicas: string[] (lista de dicas práticas)
+      - metas: string[] (lista de metas de curto e médio prazo)
+      
+      Idioma: ${language === 'pt' ? 'Português' : 'Inglês'}`;
+
+      const response = await genAI.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+      });
+      
+      const text = response.text || "";
+      const jsonStr = text.replace(/```json|```/g, '').trim();
+      const projectData = JSON.parse(jsonStr);
+
+      await addDoc(collection(db, 'projetos_financeiros'), {
+        ...projectData,
+        uid: user.uid,
+        timestamp: Date.now()
+      });
+      showToast(t.financialHealthPlan, 'success');
+    } catch (error) {
+      console.error(error);
+      showToast(t.quotaExceeded, 'error');
+    } finally {
+      setIsGeneratingProject(false);
+    }
+  };
+
+  const searchFinancingRates = async () => {
+    if (!user || debts.length === 0) {
+      showToast(t.noDebts, 'info');
+      return;
+    }
+    setIsSearchingRates(true);
+    try {
+      const prompt = `Como um analista de mercado financeiro, busque e sugira as melhores opções de financiamento e taxas de juros atuais para consolidação de dívidas no mercado brasileiro (ou global se o idioma não for PT).
+      
+      Dívidas Atuais: ${JSON.stringify(debts)}
+      
+      Retorne um objeto JSON com um array 'options' contendo objetos com:
+      - bank: string (nome da instituição)
+      - rate: string (taxa de juros sugerida ou encontrada)
+      - conditions: string (condições básicas)
+      
+      Idioma: ${language === 'pt' ? 'Português' : 'Inglês'}`;
+
+      const response = await genAI.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+      });
+      
+      const text = response.text || "";
+      const jsonStr = text.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(jsonStr);
+      setFinancingOptions(data.options || []);
+      showToast(t.bestRates, 'success');
+    } catch (error) {
+      console.error(error);
+      showToast(t.quotaExceeded, 'error');
+    } finally {
+      setIsSearchingRates(false);
     }
   };
   const [autoMonitoring, setAutoMonitoring] = useState(true);
@@ -3631,6 +3839,7 @@ export default function App() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
             <button onClick={() => setView('DASHBOARD')} title={t.dashboard} className={`text-sm font-bold transition-colors ${view === 'DASHBOARD' ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-400'}`}>{t.dashboard}</button>
+            <button onClick={() => setView('FINANCEIRO')} title={t.financial} className={`text-sm font-bold transition-colors ${view === 'FINANCEIRO' ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-400'}`}>{t.financial}</button>
             <button onClick={() => setView('SCAM')} title={t.scam} className={`text-sm font-bold transition-colors ${view === 'SCAM' ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-400'}`}>{t.scam}</button>
             <button onClick={() => setView('EMERGENCY')} title={t.emergency} className={`text-sm font-bold transition-colors ${view === 'EMERGENCY' ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-400'}`}>{t.emergency}</button>
             {isAdmin && <button onClick={() => setView('PAINEL')} title={t.adminPanel} className={`text-sm font-bold transition-colors ${view === 'PAINEL' ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-400'}`}>{t.adminPanel}</button>}
@@ -3686,6 +3895,7 @@ export default function App() {
               <div className="p-4 space-y-2">
                 {[
                   { id: 'DASHBOARD', label: t.dashboard, icon: LayoutDashboard },
+                  { id: 'FINANCEIRO', label: t.financial, icon: Briefcase },
                   { id: 'SCAM', label: t.scam, icon: ShieldAlert },
                   { id: 'EMERGENCY', label: t.emergency, icon: AlertTriangle },
                   ...(isAdmin ? [{ id: 'PAINEL', label: t.adminPanel, icon: Activity }] : []),
@@ -4394,6 +4604,35 @@ export default function App() {
               <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-8">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-black flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                    <Briefcase className="w-6 h-6 text-emerald-600 dark:text-emerald-400" /> {t.financial}
+                  </h2>
+                  <button 
+                    onClick={() => setView('FINANCEIRO')}
+                    className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hover:underline"
+                  >
+                    {t.accessModule}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                    <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">{t.expenses}</p>
+                    <p className="text-xl font-black text-slate-900 dark:text-slate-100">
+                      R$ {expenses.reduce((acc, curr) => acc + curr.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30">
+                    <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1">{t.debts}</p>
+                    <p className="text-xl font-black text-slate-900 dark:text-slate-100">
+                      R$ {debts.reduce((acc, curr) => acc + curr.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Block 4: Leisure & Culture */}
+              <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-8">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-black flex items-center gap-2 text-slate-900 dark:text-slate-100">
                     <Clapperboard className="w-6 h-6 text-indigo-600 dark:text-indigo-400" /> {t.leisureCulture}
                   </h2>
                 </div>
@@ -4907,6 +5146,293 @@ export default function App() {
             </motion.div>
           )}
 
+          {view === 'FINANCEIRO' && (
+            <motion.div key="financeiro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto space-y-8 pb-20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">{t.financial}</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t.financialDescription}</p>
+                </div>
+                <div className="bg-emerald-100 dark:bg-emerald-900/30 p-3 rounded-2xl">
+                  <Briefcase className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Expense Registration (Free) */}
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <PlusCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> {t.addExpense}
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.description}</label>
+                      <input 
+                        type="text" 
+                        value={newExpense.descricao}
+                        onChange={(e) => setNewExpense({...newExpense, descricao: e.target.value})}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
+                        placeholder="Ex: Aluguel, Supermercado"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.value}</label>
+                        <input 
+                          type="number" 
+                          value={newExpense.valor}
+                          onChange={(e) => setNewExpense({...newExpense, valor: parseFloat(e.target.value) || 0})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.category}</label>
+                        <select 
+                          value={newExpense.categoria}
+                          onChange={(e) => setNewExpense({...newExpense, categoria: e.target.value as any})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
+                        >
+                          <option value="Fixa">{t.fixed}</option>
+                          <option value="Variável">{t.variable}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        addExpense(newExpense);
+                        setNewExpense({ descricao: '', valor: 0, categoria: 'Variável' });
+                      }}
+                      className="w-full py-3 bg-emerald-600 dark:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all"
+                    >
+                      {t.save}
+                    </button>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentExpenses}</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                      {expenses.map(exp => (
+                        <div key={exp.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{exp.descricao}</p>
+                            <p className="text-[8px] text-slate-400 uppercase font-black">{exp.categoria}</p>
+                          </div>
+                          <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">R$ {exp.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Debt Registration (PRO) */}
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" /> {t.addDebt}
+                  </h3>
+                  <ProGuard>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.creditor}</label>
+                        <input 
+                          type="text" 
+                          value={newDebt.credor}
+                          onChange={(e) => setNewDebt({...newDebt, credor: e.target.value})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
+                          placeholder="Ex: Banco X, Cartão Y"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.value}</label>
+                          <input 
+                            type="number" 
+                            value={newDebt.valor}
+                            onChange={(e) => setNewDebt({...newDebt, valor: parseFloat(e.target.value) || 0})}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.interestRate} (%)</label>
+                          <input 
+                            type="number" 
+                            value={newDebt.taxaJuros}
+                            onChange={(e) => setNewDebt({...newDebt, taxaJuros: parseFloat(e.target.value) || 0})}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
+                          />
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          addDebt(newDebt);
+                          setNewDebt({ credor: '', valor: 0, taxaJuros: 0 });
+                        }}
+                        className="w-full py-3 bg-rose-600 dark:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-600 transition-all"
+                      >
+                        {t.save}
+                      </button>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentDebts}</h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                        {debts.map(debt => (
+                          <div key={debt.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div>
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{debt.credor}</p>
+                              <p className="text-[8px] text-slate-400 uppercase font-black">{debt.taxaJuros}% a.m.</p>
+                            </div>
+                            <p className="text-xs font-black text-rose-600 dark:text-rose-400">R$ {debt.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </ProGuard>
+                </div>
+              </div>
+
+              {/* Expense Consolidation (PRO) */}
+              <ProGuard>
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-8">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t.consolidatedExpenses}
+                    </h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: t.fixed, value: expenses.filter(e => e.categoria === 'Fixa').reduce((acc, curr) => acc + curr.valor, 0) },
+                              { name: t.variable, value: expenses.filter(e => e.categoria === 'Variável').reduce((acc, curr) => acc + curr.valor, 0) }
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            <Cell fill="#10b981" />
+                            <Cell fill="#f59e0b" />
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="space-y-4 flex flex-col justify-center">
+                      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t.fixed}</span>
+                        </div>
+                        <span className="text-sm font-black text-slate-900 dark:text-slate-100">
+                          R$ {expenses.filter(e => e.categoria === 'Fixa').reduce((acc, curr) => acc + curr.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-amber-500" />
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t.variable}</span>
+                        </div>
+                        <span className="text-sm font-black text-slate-900 dark:text-slate-100">
+                          R$ {expenses.filter(e => e.categoria === 'Variável').reduce((acc, curr) => acc + curr.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{t.total}</span>
+                        <span className="text-lg font-black text-indigo-900 dark:text-indigo-100">
+                          R$ {expenses.reduce((acc, curr) => acc + curr.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financing Search & AI Project (PRO) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <Search className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t.bestRates}
+                      </h3>
+                      <button 
+                        onClick={searchFinancingRates}
+                        disabled={isSearchingRates || debts.length === 0}
+                        className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                      >
+                        {isSearchingRates ? <Clock className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {financingOptions.length > 0 ? financingOptions.map((opt, i) => (
+                        <div key={i} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-black text-slate-800 dark:text-slate-200">{opt.bank}</span>
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">{opt.rate}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{opt.conditions}</p>
+                        </div>
+                      )) : (
+                        <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t.noRatesFound}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" /> {t.financialHealthPlan}
+                      </h3>
+                      <button 
+                        onClick={generateFinancialProject}
+                        disabled={isGeneratingProject || expenses.length === 0}
+                        className="px-4 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all disabled:opacity-50"
+                      >
+                        {isGeneratingProject ? t.analyzing : t.generatePlan}
+                      </button>
+                    </div>
+                    
+                    {financialProject ? (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-900/30">
+                          <p className="text-xs text-amber-900 dark:text-amber-100 leading-relaxed font-medium">{financialProject.plano}</p>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.tips}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {financialProject.dicas.map((dica, i) => (
+                              <span key={i} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[10px] font-bold">{dica}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.goals}</p>
+                          <div className="space-y-2">
+                            {financialProject.metas.map((meta, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{meta}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 space-y-4">
+                        <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto">
+                          <Sparkles className="w-8 h-8 text-amber-500" />
+                        </div>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t.noProjectFound}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </ProGuard>
+            </motion.div>
+          )}
           {view === 'SETTINGS' && (
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto space-y-8">
               <div className="flex items-center justify-between">

@@ -150,6 +150,48 @@
         "timestamp": { "type": "number" }
       },
       "required": ["nome", "telefone", "uid"]
+    },
+    "Gasto": {
+      "title": "Gasto Financeiro",
+      "description": "Registro de gastos fixos ou variáveis.",
+      "type": "object",
+      "properties": {
+        "descricao": { "type": "string" },
+        "valor": { "type": "number" },
+        "tipo": { "type": "string", "enum": ["fixo", "variavel"] },
+        "categoria": { "type": "string" },
+        "data": { "type": "string", "format": "date" },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["descricao", "valor", "tipo", "uid"]
+    },
+    "Divida": {
+      "title": "Dívida Financeira",
+      "description": "Registro de dívidas para consolidação e plano de quitação.",
+      "type": "object",
+      "properties": {
+        "credor": { "type": "string" },
+        "valorTotal": { "type": "number" },
+        "taxaJuros": { "type": "number" },
+        "vencimento": { "type": "string", "format": "date" },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["credor", "valorTotal", "uid"]
+    },
+    "ProjetoFinanceiro": {
+      "title": "Projeto de Saúde Financeira",
+      "description": "Plano gerado por IA para quitação de dívidas e melhoria financeira.",
+      "type": "object",
+      "properties": {
+        "plano": { "type": "string" },
+        "dicas": { "type": "array", "items": { "type": "string" } },
+        "metas": { "type": "array", "items": { "type": "string" } },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["plano", "uid"]
     }
   },
   "firestore": {
@@ -192,6 +234,18 @@
     "contatos_emergencia/{contatoId}": {
       "schema": "ContatoEmergencia",
       "description": "Contatos de emergência do usuário."
+    },
+    "gastos/{gastoId}": {
+      "schema": "Gasto",
+      "description": "Gastos fixos e variáveis do usuário."
+    },
+    "dividas/{dividaId}": {
+      "schema": "Divida",
+      "description": "Dívidas do usuário para análise Pro."
+    },
+    "projetos_financeiros/{projetoId}": {
+      "schema": "ProjetoFinanceiro",
+      "description": "Planos de saúde financeira gerados por IA."
     }
   }
 }
