@@ -345,6 +345,8 @@ const translations = {
     medicationDeleted: "Medicamento excluído!",
     medicationAlarm: "Hora do Medicamento!",
     takeNow: "Tomar Agora",
+    testAlarm: "Testar Alarme",
+    medicationLogs: "Logs de Medicamentos",
     noMedications: "Nenhum medicamento cadastrado.",
     nearbyUnits: "Unidades de Saúde Próximas em Santos",
     nearbyPharmacies: "Farmácias Próximas",
@@ -719,6 +721,8 @@ const translations = {
     medicationDeleted: "Medication deleted!",
     medicationAlarm: "Time for Medication!",
     takeNow: "Take Now",
+    testAlarm: "Test Alarm",
+    medicationLogs: "Medication Logs",
     noMedications: "No medications registered.",
     nearbyUnits: "Nearby Health Units in Santos",
     nearbyPharmacies: "Nearby Pharmacies",
@@ -3058,6 +3062,7 @@ export default function App() {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [activeAlarmMedication, setActiveAlarmMedication] = useState<Medication | null>(null);
   const [lastAlarmTime, setLastAlarmTime] = useState<string | null>(null);
+  const [medicationLogs, setMedicationLogs] = useState<any[]>([]);
 
   const playAlarmSound = () => {
     try {
@@ -3086,6 +3091,22 @@ export default function App() {
     }
   };
 
+  const logMedicationAlarm = async (med: Medication) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'logs_medicacao'), {
+        medicationId: med.id || 'test',
+        nome: med.nome,
+        horario: med.horario,
+        uid: user.uid,
+        timestamp: Date.now(),
+        status: 'ALARMADO'
+      });
+    } catch (err) {
+      console.error("Error logging medication:", err);
+    }
+  };
+
   useEffect(() => {
     const checkMedications = () => {
       if (!medications.length) return;
@@ -3094,7 +3115,12 @@ export default function App() {
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
       const currentTime = `${hours}:${minutes}`;
-      const todayStr = now.toISOString().split('T')[0];
+      
+      // Local date YYYY-MM-DD
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
 
       if (currentTime === lastAlarmTime) return;
 
@@ -3113,14 +3139,24 @@ export default function App() {
             setActiveAlarmMedication(med);
             setLastAlarmTime(currentTime);
             playAlarmSound();
+            logMedicationAlarm(med);
           }
         }
       });
     };
 
-    const interval = setInterval(checkMedications, 15000);
+    const interval = setInterval(checkMedications, 10000); // Check every 10s
     return () => clearInterval(interval);
-  }, [medications, lastAlarmTime]);
+  }, [medications, lastAlarmTime, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, 'logs_medicacao'), orderBy('timestamp', 'desc'), limit(20));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setMedicationLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, [user]);
   const [services, setServices] = useState<TalentService[]>([]);
   const [isWalking, setIsWalking] = useState(false);
   const toggleWalking = () => {
@@ -5870,6 +5906,23 @@ export default function App() {
                   >
                     {isEditingMedication ? t.update : t.save}
                   </button>
+                  <button 
+                    onClick={() => {
+                      const testMed: Medication = { 
+                        nome: "Teste de Alarme", 
+                        horario: "TEST", 
+                        dosagem: "1 dose", 
+                        uid: user?.uid || 'test',
+                        usoContinuo: true 
+                      };
+                      setActiveAlarmMedication(testMed);
+                      playAlarmSound();
+                      logMedicationAlarm(testMed);
+                    }}
+                    className="px-6 py-4 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-amber-200 transition-all flex items-center gap-2"
+                  >
+                    <Zap className="w-4 h-4" /> {t.testAlarm}
+                  </button>
                   {isEditingMedication && (
                     <button 
                       onClick={() => {
@@ -5931,6 +5984,25 @@ export default function App() {
                   )}
                 </div>
               </div>
+
+              {isAdmin && (
+                <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
+                    <History className="w-5 h-5 text-indigo-600" /> {t.medicationLogs}
+                  </h3>
+                  <div className="space-y-2">
+                    {medicationLogs.map(log => (
+                      <div key={log.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{log.nome}</p>
+                          <p className="text-[10px] text-slate-500 uppercase font-black">{log.horario} • {new Date(log.timestamp).toLocaleString()}</p>
+                        </div>
+                        <span className="text-[8px] font-black bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full uppercase">{log.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
