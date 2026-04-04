@@ -13,7 +13,7 @@ import {
   Search, Plus, CheckCircle2, XCircle, AlertCircle, ChevronRight,
   ExternalLink, Clapperboard, ShoppingBag, Theater, Beer, Utensils,
   ShoppingBasket, Store, Menu, Star, Moon, Sun, HelpCircle,
-  PlusCircle, BarChart3, RefreshCw, Sparkles
+  PlusCircle, BarChart3, RefreshCw, Sparkles, Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -22,7 +22,8 @@ import {
 } from 'firebase/auth';
 import { 
   collection, addDoc, onSnapshot, query, orderBy, where,
-  limit, updateDoc, doc, setDoc, getDoc, Timestamp
+  limit, updateDoc, doc, setDoc, getDoc, Timestamp,
+  serverTimestamp, deleteDoc
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -201,6 +202,32 @@ const translations = {
     quotaExceeded: "Cota da API excedida. Tente novamente em alguns instantes.",
     refresh: "Atualizar",
     sentinelActive: "SENTINELA ATIVO",
+    edit: "Editar",
+    delete: "Excluir",
+    cancel: "Cancelar",
+    update: "Atualizar",
+    confirmDelete: "Tem certeza que deseja excluir?",
+    recentExpenses: "Gastos Recentes",
+    recentDebts: "Dívidas Recentes",
+    financialDescription: "Gestão de gastos e dívidas com IA",
+    addExpense: "Adicionar Gasto",
+    addDebt: "Adicionar Dívida",
+    description: "Descrição",
+    value: "Valor",
+    category: "Categoria",
+    fixed: "Fixa",
+    variable: "Variável",
+    creditor: "Credor",
+    interestRate: "Taxa de Juros",
+    consolidatedExpenses: "Gastos Consolidados",
+    bestRates: "Melhores Taxas de Financiamento",
+    financialHealthPlan: "Plano de Saúde Financeira IA",
+    generatePlan: "Gerar Plano",
+    noRatesFound: "Nenhuma taxa encontrada.",
+    noProjectFound: "Nenhum projeto encontrado.",
+    tips: "Dicas",
+    goals: "Metas",
+    total: "Total",
     protectionLevel: "Nível de Proteção",
     high: "ALTO",
     panicButton: "BOTÃO DE PÂNICO",
@@ -325,44 +352,22 @@ const translations = {
     deleteContact: "Excluir Contato",
     later: "Mais tarde",
     okUnderstood: "Ok, entendi",
-    leisureCulture: "LAZER E CULTURA",
-    findLeisure: "Encontrar Lazer",
-    cinema: "Cinema",
-    mall: "Shopping",
     financial: "Financeiro",
-    financialDescription: "Controle de gastos e saúde financeira",
     fixedExpenses: "Gastos Fixos",
     variableExpenses: "Gastos Variáveis",
-    addExpense: "Adicionar Gasto",
-    description: "Descrição",
-    value: "Valor",
-    category: "Categoria",
     date: "Data",
     type: "Tipo",
-    fixed: "Fixo",
-    variable: "Variável",
     totalExpenses: "Total de Gastos",
-    consolidatedExpenses: "Gastos Consolidados",
     debts: "Dívidas",
-    creditor: "Credor",
     totalValue: "Valor Total",
-    interestRate: "Taxa de Juros (%)",
     dueDate: "Vencimento",
-    addDebt: "Adicionar Dívida",
     financialProject: "Projeto Financeiro",
     generateProject: "Gerar Projeto de Saúde Financeira",
     financingSearch: "Buscar Melhores Taxas de Financiamento",
     debtConsolidation: "Consolidação de Dívidas",
-    financialHealthPlan: "Plano de Saúde Financeira",
-    tips: "Dicas",
-    goals: "Metas",
     proFeature: "Funcionalidade PRO",
     upgradeToProFinance: "Assine o PRO para consolidar dívidas e gerar seu plano financeiro personalizado.",
     financingOptions: "Opções de Financiamento",
-    bestRates: "Melhores Taxas Encontradas",
-    bank: "Banco/Instituição",
-    rate: "Taxa",
-    conditions: "Condições",
     financialSummary: "Resumo Financeiro",
     noExpenses: "Nenhum gasto registrado.",
     noDebts: "Nenhuma dívida registrada.",
@@ -441,8 +446,8 @@ const translations = {
     revenueOverTime: "Receita ao Longo do Tempo",
     usageLogs: "Logs de Uso",
     noData: "Sem dados para exibir.",
-    welcomeTitle: "Bem-vindo ao O GUARDIÃO",
-    welcomeSubtitle: "Sua segurança inteligente começa aqui.",
+    welcomeTitle: "Bem-vindo ao O GUARDIAO",
+    welcomeSubtitle: "Desenvolvido pela inteligência avançada do Gemini, este super app une tecnologia de ponta e segurança de nível global. Operando sobre a infraestrutura robusta e os servidores ultra-seguros do Google, garantimos que cada linha de código e cada dado seu receba a máxima proteção e eficiência que a tecnologia moderna pode oferecer.",
     welcomeStep1Title: "🛡️ Proteção contra Golpes",
     welcomeStep1Desc: "Cole mensagens suspeitas no módulo 'Escudo' para análise instantânea por IA.",
     welcomeStep2Title: "🚨 Botão de Pânico",
@@ -456,7 +461,7 @@ const translations = {
     pharmacyPrompt: "Quais são as 3 farmácias mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
     unitsPrompt: "Quais são as 5 unidades de saúde (UPAs, postos de saúde, hospitais, policlínicas) mais próximas de mim? Liste-as no formato 'Nome (Distância)'.",
     leisurePrompt: "Quais são os 3 {category} mais próximos de mim? Elenque-os no formato 'Nome (Distância) [Avaliação]'. A avaliação deve ser um número de 0 a 5.",
-    financialStability: "ESTABILIDADE FINANCEIRA",
+    financialStability: "PROTEÇÃO CONTRA GOLPES E FRAUDES",
     antiFraudShieldActive: "Escudo Anti-Fraude Ativo",
     aiMonitoringDescription: "IA monitorando links e mensagens suspeitas em tempo real.",
     generalConsultancies: "Consultorias em geral",
@@ -556,6 +561,32 @@ const translations = {
     quotaExceeded: "API quota exceeded. Please try again in a few moments.",
     refresh: "Refresh",
     sentinelActive: "SENTINEL ACTIVE",
+    edit: "Edit",
+    delete: "Delete",
+    cancel: "Cancel",
+    update: "Update",
+    confirmDelete: "Are you sure you want to delete?",
+    recentExpenses: "Recent Expenses",
+    recentDebts: "Recent Debts",
+    financialDescription: "Expense and debt management with AI",
+    addExpense: "Add Expense",
+    addDebt: "Add Debt",
+    description: "Description",
+    value: "Value",
+    category: "Category",
+    fixed: "Fixed",
+    variable: "Variable",
+    creditor: "Creditor",
+    interestRate: "Interest Rate",
+    consolidatedExpenses: "Consolidated Expenses",
+    bestRates: "Best Financing Rates",
+    financialHealthPlan: "AI Financial Health Plan",
+    generatePlan: "Generate Plan",
+    noRatesFound: "No rates found.",
+    noProjectFound: "No project found.",
+    tips: "Tips",
+    goals: "Goals",
+    total: "Total",
     protectionLevel: "Protection Level",
     high: "HIGH",
     panicButton: "PANIC BUTTON",
@@ -757,8 +788,8 @@ const translations = {
     revenueOverTime: "Revenue Over Time",
     usageLogs: "Usage Logs",
     noData: "No data to display.",
-    welcomeTitle: "Welcome to THE GUARDIAN",
-    welcomeSubtitle: "Your smart security starts here.",
+    welcomeTitle: "Welcome to O GUARDIAO",
+    welcomeSubtitle: "Powered by Gemini's advanced intelligence, this super app combines cutting-edge technology with world-class security. Running on Google's robust infrastructure and ultra-secure servers, we ensure that every line of code and every piece of your data receives the maximum protection and efficiency that modern technology can provide.",
     welcomeStep1Title: "🛡️ Scam Protection",
     welcomeStep1Desc: "Paste suspicious messages in the 'Shield' module for instant AI analysis.",
     welcomeStep2Title: "🚨 Panic Button",
@@ -772,7 +803,7 @@ const translations = {
     pharmacyPrompt: "What are the 3 nearest pharmacies to me? List them in the format 'Name (Distance)'.",
     unitsPrompt: "What are the 5 nearest health units (UPAs, health centers, hospitals, polyclinics) to me? List them in the format 'Name (Distance)'.",
     leisurePrompt: "What are the 3 nearest {category} to me? List them in the format 'Name (Distance) [Rating]'. The rating should be a number from 0 to 5.",
-    financialStability: "FINANCIAL STABILITY",
+    financialStability: "PROTECTION AGAINST SCAMS AND FRAUD",
     antiFraudShieldActive: "Anti-Fraud Shield Active",
     aiMonitoringDescription: "AI monitoring links and suspicious messages in real-time.",
     generalConsultancies: "General Consultancies",
@@ -867,8 +898,44 @@ const translations = {
     dark: "Oscuro",
     save: "Guardar",
     selectLanguage: "Seleccione el Idioma",
-    welcome: "Bienvenido al O GUARDIAO",
-    sentinelActive: "SENTINELA ACTIVO",
+    welcomeTitle: "Bienvenido a O GUARDIAO",
+    welcomeSubtitle: "Impulsada por la inteligencia avanzada de Gemini, esta súper aplicación combina tecnología de vanguardia con seguridad de clase mundial. Al operar sobre la robusta infraestructura y los servidores ultra seguros de Google, garantizamos que cada línea de código y cada dato suyo reciba la máxima protección y eficiencia que la tecnología moderna puede ofrecer.",
+    welcomeStep1Title: "🛡️ Protección contra Estafas",
+    welcomeStep1Desc: "Pegue mensajes sospechosos en el módulo 'Escudo' para un análisis instantáneo por IA.",
+    welcomeStep2Title: "🚨 Botón de Pánico",
+    welcomeStep2Desc: "En emergencias, la aplicación graba audio, analiza la situación y alerta a los contactos de confianza.",
+    welcomeStep3Title: "🗺️ Ruta Segura",
+    welcomeStep3Desc: "Planifique rutas evitando áreas de riesgo basadas en datos en tempo real.",
+    welcomeStep4Title: "🏥 Salud y Comunidad",
+    welcomeStep4Desc: "Encuentre farmacias, hospitales y servicios locales rápidamente.",
+    getStarted: "Empezar Ahora",
+    tutorial: "Tutorial",
+    edit: "Editar",
+    delete: "Eliminar",
+    cancel: "Cancelar",
+    update: "Actualizar",
+    confirmDelete: "¿Estás seguro de que quieres eliminar?",
+    recentExpenses: "Gastos Recientes",
+    recentDebts: "Deudas Recientes",
+    financialDescription: "Gestión de gastos y deudas con IA",
+    addExpense: "Añadir Gasto",
+    addDebt: "Añadir Deuda",
+    description: "Descripción",
+    value: "Valor",
+    category: "Categoría",
+    fixed: "Fijo",
+    variable: "Variable",
+    creditor: "Acreedor",
+    interestRate: "Tasa de Interés",
+    consolidatedExpenses: "Gastos Consolidados",
+    bestRates: "Mejores Tasas de Financiación",
+    financialHealthPlan: "Plan de Salud Financiera IA",
+    generatePlan: "Generar Plan",
+    noRatesFound: "No se encontraron tasas.",
+    noProjectFound: "No se encontró ningún proyecto.",
+    tips: "Consejos",
+    goals: "Metas",
+    total: "Total",
     protectionLevel: "Nivel de Protección",
     high: "ALTO",
     panicButton: "BOTÓN DE PÂNICO",
@@ -984,7 +1051,7 @@ const translations = {
     pharmacyPrompt: "¿Cuáles son las 3 farmacias más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
     unitsPrompt: "¿Cuáles son las 5 unidades de salud (UPAs, centros de salud, hospitales, policlínicas) más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
     leisurePrompt: "¿Cuáles son los 3 {category} más cercanos a mí? Enuméralos en el formato 'Nombre (Distancia) [Calificación]'. La calificación debe ser un número de 0 a 5.",
-    financialStability: "ESTABILIDAD FINANCIERA",
+    financialStability: "PROTECCIÓN CONTRA ESTAFAS Y FRAUDES",
     antiFraudShieldActive: "Escudo Anti-Fraude Activo",
     aiMonitoringDescription: "IA monitoreando enlaces y mensajes sospechosos en tiempo real.",
     generalConsultancies: "Consultorías en general",
@@ -1052,7 +1119,7 @@ const translations = {
       "Vacante de empleo home office: R$ 800/día. Llame en el enlace: http://vagas-urgentes.net"
     ],
     routePrompt: "Como asistente de seguridad local en Santos, SP, trace una ruta segura desde \"{origin}\" hacia el destino: \"{dest}\". Considere evitar áreas de riesgo conocidas como la Zona Portuaria Norte e el Centro Histórico por la noche. Sugiera una ruta principal y explique por qué es más segura. Responda de forma concisa en español.",
-    routeSystemInstruction: "Eres el Especialista en Rutas Seguras del Guardián. Tu misión es proteger al ciudadano sugiriendo caminos iluminados y concurridos.",
+    routeSystemInstruction: "Eres el Especialista en Rutas Seguras del O GUARDIAO. Tu misión es proteger al ciudadano sugiriendo caminos iluminados y concurridos.",
     routeFallback: "Error al calcular la ruta. Siga las avenidas principales y bien iluminadas.",
     routeSuccess: "Ruta calculada con éxito a través de las vías principales.",
     emergencyAlert: "Emergencia {service}",
@@ -1079,8 +1146,44 @@ const translations = {
     dark: "Sombre",
     save: "Enregistrer",
     selectLanguage: "Sélectionner la langue",
-    welcome: "Bienvenue sur O GUARDIAO",
-    sentinelActive: "SENTINELLE ACTIVE",
+    welcomeTitle: "Bienvenue sur O GUARDIAO",
+    welcomeSubtitle: "Propulsée par l'intelligence avancée de Gemini, cette super application combine une technologie de pointe avec une sécurité de classe mondiale. Fonctionnant sur l'infrastructure robuste et les serveurs ultra-sécurisés de Google, nous garantissons que chaque ligne de code et chaque donnée reçoit la protection et l'efficacité maximales que la technologie moderne peut offrir.",
+    welcomeStep1Title: "🛡️ Protection contre les Arnaques",
+    welcomeStep1Desc: "Collez les messages suspects dans le module 'Bouclier' pour une analyse instantanée par l'IA.",
+    welcomeStep2Title: "🚨 Bouton Panique",
+    welcomeStep2Desc: "En cas d'urgence, l'application enregistre l'audio, analyse la situation et alerte les contacts de confiance.",
+    welcomeStep3Title: "🗺️ Route Sûre",
+    welcomeStep3Desc: "Planifiez des itinéraires en évitant les zones à risque grâce aux données en temps réel.",
+    welcomeStep4Title: "🏥 Santé et Communauté",
+    welcomeStep4Desc: "Trouvez rapidement des pharmacies, des hôpitaux et des services locaux.",
+    getStarted: "Commencer Maintenant",
+    tutorial: "Tutoriel",
+    edit: "Modifier",
+    delete: "Supprimer",
+    cancel: "Annuler",
+    update: "Mettre à jour",
+    confirmDelete: "Êtes-vous sûr de vouloir supprimer ?",
+    recentExpenses: "Dépenses Récentes",
+    recentDebts: "Dettes Récentes",
+    financialDescription: "Gestion des dépenses et des dettes avec l'IA",
+    addExpense: "Ajouter une Dépense",
+    addDebt: "Ajouter une Dette",
+    description: "Description",
+    value: "Valeur",
+    category: "Catégorie",
+    fixed: "Fixe",
+    variable: "Variable",
+    creditor: "Créancier",
+    interestRate: "Taux d'Intérêt",
+    consolidatedExpenses: "Dépenses Consolidées",
+    bestRates: "Meilleurs Taux de Financement",
+    financialHealthPlan: "Plan de Santé Financière IA",
+    generatePlan: "Générer un Plan",
+    noRatesFound: "Aucun taux trouvé.",
+    noProjectFound: "Aucun projet trouvé.",
+    tips: "Conseils",
+    goals: "Objectifs",
+    total: "Total",
     protectionLevel: "Niveau de protection",
     high: "ÉLEVÉ",
     panicButton: "BOUTON PANIQUE",
@@ -1194,7 +1297,7 @@ const translations = {
     pharmacyPrompt: "Quelles sont les 3 pharmacies les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
     unitsPrompt: "Quelles sont les 5 unités de santé (UPAs, centres de santé, hôpitaux, polycliniques) les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
     leisurePrompt: "Quels sont les 3 {category} les plus proches de moi ? Énumérez-les au format 'Nom (Distance)'.",
-    financialStability: "STABILITÉ FINANCIÈRE",
+    financialStability: "PROTECTION CONTRE LES ARNAQUES ET LA FRAUDE",
     antiFraudShieldActive: "Bouclier anti-fraude actif",
     aiMonitoringDescription: "IA surveillant les liens et messages suspects en temps réel.",
     generalConsultancies: "Consultations générales",
@@ -1289,8 +1392,44 @@ const translations = {
     dark: "Dunkel",
     save: "Speichern",
     selectLanguage: "Sprache auswählen",
-    welcome: "Willkommen bei O GUARDIAO",
-    sentinelActive: "SENTINEL AKTIV",
+    welcomeTitle: "Willkommen bei O GUARDIAO",
+    welcomeSubtitle: "Angetrieben durch die fortschrittliche Intelligenz von Gemini, kombiniert diese Super-App Spitzentechnologie mit erstklassiger Sicherheit. Durch den Betrieb auf der robusten Infrastruktur und den extrem sicheren Servern von Google stellen wir sicher, dass jede Codezeile und jedes Ihrer Daten den maximalen Schutz und die Effizienz erhält, die moderne Technologie bieten kann.",
+    welcomeStep1Title: "🛡️ Schutz vor Betrug",
+    welcomeStep1Desc: "Fügen Sie verdächtige Nachrichten in das Modul 'Schild' ein, um eine sofortige KI-Analyse zu erhalten.",
+    welcomeStep2Title: "🚨 Panik-Button",
+    welcomeStep2Desc: "In Notfällen nimmt die App Audio auf, analysiert die Situation und alarmiert vertrauenswürdige Kontakte.",
+    welcomeStep3Title: "🗺️ Sichere Route",
+    welcomeStep3Desc: "Planen Sie Wege und vermeiden Sie Risikogebiete basierend auf Echtzeitdaten.",
+    welcomeStep4Title: "🏥 Gesundheit & Gemeinschaft",
+    welcomeStep4Desc: "Finden Sie schnell Apotheken, Krankenhäuser und lokale Dienste.",
+    getStarted: "Jetzt Loslegen",
+    tutorial: "Tutorial",
+    edit: "Bearbeiten",
+    delete: "Löschen",
+    cancel: "Abbrechen",
+    update: "Aktualisieren",
+    confirmDelete: "Sind Sie sicher, dass Sie löschen möchten?",
+    recentExpenses: "Aktuelle Ausgaben",
+    recentDebts: "Aktuelle Schulden",
+    financialDescription: "Ausgaben- und Schuldenmanagement mit KI",
+    addExpense: "Ausgabe Hinzufügen",
+    addDebt: "Schulden Hinzufügen",
+    description: "Beschreibung",
+    value: "Wert",
+    category: "Kategorie",
+    fixed: "Fest",
+    variable: "Variabel",
+    creditor: "Gläubiger",
+    interestRate: "Zinssatz",
+    consolidatedExpenses: "Konsolidierte Ausgaben",
+    bestRates: "Beste Finanzierungssätze",
+    financialHealthPlan: "KI-Finanzgesundheitsplan",
+    generatePlan: "Plan Erstellen",
+    noRatesFound: "Keine Sätze gefunden.",
+    noProjectFound: "Kein Projekt gefunden.",
+    tips: "Tipps",
+    goals: "Ziele",
+    total: "Gesamt",
     protectionLevel: "Schutzniveau",
     high: "HOCH",
     panicButton: "PANIK-BUTTON",
@@ -1404,7 +1543,7 @@ const translations = {
     pharmacyPrompt: "Was sind die 3 nächsten Apotheken in meiner Nähe? Listen Sie sie im Format 'Name (Entfernung)' auf.",
     unitsPrompt: "Was sind die 5 nächsten Gesundheitseinrichtungen (UPAs, Gesundheitszentren, Krankenhäuser, Polikliniken) in meiner Nähe? Listen Sie sie im Format 'Name (Entfernung)' auf.",
     leisurePrompt: "Was sind die 3 nächstgelegenen {category} für mich? Listen Sie sie im Format 'Name (Entfernung)' auf.",
-    financialStability: "FINANZIELLE STABILITÄT",
+    financialStability: "SCHUTZ VOR BETRUG UND TÄUSCHUNG",
     antiFraudShieldActive: "Anti-Betrugs-Schild aktiv",
     aiMonitoringDescription: "KI überwacht Links und verdächtige Nachrichten in Echtzeit.",
     generalConsultancies: "Allgemeine Beratungen",
@@ -1501,6 +1640,44 @@ const translations = {
     selectLanguage: "Seleziona lingua",
     welcome: "Benvenuto in O GUARDIAO",
     sentinelActive: "SENTINELLA ATTIVA",
+    welcomeTitle: "Benvenuto su O GUARDIAO",
+    welcomeSubtitle: "Alimentata dall'intelligenza avanzata di Gemini, questa super app combina tecnologia all'avanguardia con sicurezza di classe mondiale. Operando sulla robusta infrastruttura e sui server ultra-sicuri di Google, garantiamo che ogni riga di codice e ogni tuo dato riceva la massima protezione ed efficienza che la tecnologia moderna può offrire.",
+    welcomeStep1Title: "🛡️ Protezione contro le Truffe",
+    welcomeStep1Desc: "Incolla i messaggi sospetti nel modulo 'Scudo' per un'analisi istantanea dell'IA.",
+    welcomeStep2Title: "🚨 Pulsante Panico",
+    welcomeStep2Desc: "In caso di emergenza, l'app registra l'audio, analizza la situazione e avvisa i contatti fidati.",
+    welcomeStep3Title: "🗺️ Percorso Sicuro",
+    welcomeStep3Desc: "Pianifica percorsi evitando aree a rischio basandoti su dati in tempo reale.",
+    welcomeStep4Title: "🏥 Salute e Comunità",
+    welcomeStep4Desc: "Trova rapidamente farmacie, ospedali e servizi locali.",
+    getStarted: "Inizia Ora",
+    tutorial: "Tutorial",
+    edit: "Modifica",
+    delete: "Elimina",
+    cancel: "Annulla",
+    update: "Aggiorna",
+    confirmDelete: "Sei sicuro di voler eliminare?",
+    recentExpenses: "Spese Recenti",
+    recentDebts: "Debiti Recenti",
+    financialDescription: "Gestione delle spese e dei debiti con l'IA",
+    addExpense: "Aggiungi Spesa",
+    addDebt: "Aggiungi Debito",
+    description: "Descrizione",
+    value: "Valore",
+    category: "Categoria",
+    fixed: "Fisso",
+    variable: "Variabile",
+    creditor: "Creditore",
+    interestRate: "Tasso di Interesse",
+    consolidatedExpenses: "Spese Consolidate",
+    bestRates: "Migliori Tassi di Finanziamento",
+    financialHealthPlan: "Piano di Salute Finanziaria IA",
+    generatePlan: "Genera Piano",
+    noRatesFound: "Nessun tasso trovato.",
+    noProjectFound: "Nessun progetto trovato.",
+    tips: "Suggerimenti",
+    goals: "Obiettivi",
+    total: "Totale",
     protectionLevel: "Livello di protezione",
     high: "ALTO",
     panicButton: "PULSANTE PANICO",
@@ -1614,7 +1791,7 @@ const translations = {
     pharmacyPrompt: "Quali sono le 3 farmacie più vicine a me? Elencale nel formato 'Nome (Distanza)'.",
     unitsPrompt: "Quali sono le 5 unità sanitarie (UPA, centri sanitari, ospedali, policlinici) più vicine a me? Elencale nel formato 'Nome (Distanza)'.",
     leisurePrompt: "Quali sono i 3 {category} più vicini a me? Elencali nel formato 'Nome (Distanza)'.",
-    financialStability: "STABILITÀ FINANZIARIA",
+    financialStability: "PROTEZIONE CONTRO TRUFFE E FRODI",
     antiFraudShieldActive: "Scudo anti-frode attivo",
     aiMonitoringDescription: "IA che monitora link e messaggi sospetti in tempo reale.",
     generalConsultancies: "Consulenze generali",
@@ -1709,8 +1886,44 @@ const translations = {
     dark: "Donker",
     save: "Opslaan",
     selectLanguage: "Selecteer taal",
-    welcome: "Welkom bij O GUARDIAO",
-    sentinelActive: "SENTINEL ACTIEF",
+    welcomeTitle: "Welkom bij O GUARDIAO",
+    welcomeSubtitle: "Aangedreven door de geavanceerde intelligentie van Gemini, combineert deze super-app geavanceerde technologie met beveiliging van wereldklasse. Door te draaien op de robuuste infrastructuur en ultra-beveiligde servers van Google, garanderen we dat elke regel code en elk gegeven van u de maximale bescherming en efficiëntie krijgt die moderne technologie kan bieden.",
+    welcomeStep1Title: "🛡️ Bescherming tegen Fraude",
+    welcomeStep1Desc: "Plak verdachte berichten in de 'Schild'-module voor onmiddellijke AI-analyse.",
+    welcomeStep2Title: "🚨 Paniekknop",
+    welcomeStep2Desc: "In noodgevallen neemt de app audio op, analyseert de situatie en waarschuwt vertrouwde contacten.",
+    welcomeStep3Title: "🗺️ Veilige Route",
+    welcomeStep3Desc: "Plan routes en vermijd risicogebieden op basis van real-time gegevens.",
+    welcomeStep4Title: "🏥 Gezondheid & Gemeenschap",
+    welcomeStep4Desc: "Vind snel apotheken, ziekenhuizen en lokale diensten.",
+    getStarted: "Nu Beginnen",
+    tutorial: "Tutorial",
+    edit: "Bewerken",
+    delete: "Verwijderen",
+    cancel: "Annuleren",
+    update: "Bijwerken",
+    confirmDelete: "Weet u zeker dat u wilt verwijderen?",
+    recentExpenses: "Recente Uitgaven",
+    recentDebts: "Recente Schulden",
+    financialDescription: "Beheer van uitgaven en schulden met AI",
+    addExpense: "Uitgave Toevoegen",
+    addDebt: "Schuld Toevoegen",
+    description: "Beschrijving",
+    value: "Waarde",
+    category: "Categorie",
+    fixed: "Vast",
+    variable: "Variabel",
+    creditor: "Schuldeiser",
+    interestRate: "Rentepercentage",
+    consolidatedExpenses: "Geconsolideerde Uitgaven",
+    bestRates: "Beste Financieringspercentages",
+    financialHealthPlan: "AI Financieel Gezondheidsplan",
+    generatePlan: "Plan Genereren",
+    noRatesFound: "Geen percentages gevonden.",
+    noProjectFound: "Geen project gevonden.",
+    tips: "Tips",
+    goals: "Doelen",
+    total: "Totaal",
     protectionLevel: "Beschermingsniveau",
     high: "HOOG",
     panicButton: "PANIEKKNOP",
@@ -1824,7 +2037,7 @@ const translations = {
     pharmacyPrompt: "Wat zijn de 3 dichtstbijzijnde apotheken bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
     unitsPrompt: "Wat zijn de 5 dichtstbijzijnde gezondheidscentra (UPA's, gezondheidscentra, ziekenhuizen, poliklinieken) bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
     leisurePrompt: "Wat zijn de 3 dichtstbijzijnde {category} bij mij? Vermeld ze in het formaat 'Naam (Afstand)'.",
-    financialStability: "FINANCIËLE STABILITEIT",
+    financialStability: "BESCHERMING TEGEN OPLICHTING EN FRAUDE",
     antiFraudShieldActive: "Anti-fraude schild actief",
     aiMonitoringDescription: "AI monitort links en verdachte berichten in real-time.",
     generalConsultancies: "Algemene consulten",
@@ -1919,8 +2132,44 @@ const translations = {
     dark: "深色",
     save: "保存",
     selectLanguage: "选择语言",
-    welcome: "欢迎来到 O GUARDIAO",
-    sentinelActive: "哨兵激活",
+    welcomeTitle: "欢迎来到 O GUARDIAO",
+    welcomeSubtitle: "由 Gemini 的先进智能驱动，这款超级应用将尖端技术与世界级安全性相结合。运行在 Google 强大的基础设施和超安全服务器上，我们确保每一行代码和您的每一条数据都能获得现代技术所能提供的最大保护和效率。",
+    welcomeStep1Title: "🛡️ 诈骗保护",
+    welcomeStep1Desc: "将可疑消息粘贴到“护盾”模块中，进行即时 AI 分析。",
+    welcomeStep2Title: "🚨 紧急按钮",
+    welcomeStep2Desc: "在紧急情况下，应用会录制音频、分析情况并警报信任的联系人。",
+    welcomeStep3Title: "🗺️ 安全路线",
+    welcomeStep3Desc: "根据实时数据规划路径，避开风险区域。",
+    welcomeStep4Title: "🏥 健康与社区",
+    welcomeStep4Desc: "快速查找药店、医院和当地服务。",
+    getStarted: "现在开始",
+    tutorial: "教程",
+    edit: "编辑",
+    delete: "删除",
+    cancel: "取消",
+    update: "更新",
+    confirmDelete: "您确定要删除吗？",
+    recentExpenses: "最近支出",
+    recentDebts: "最近债务",
+    financialDescription: "使用 AI 管理支出和债务",
+    addExpense: "添加支出",
+    addDebt: "添加债务",
+    description: "描述",
+    value: "价值",
+    category: "类别",
+    fixed: "固定",
+    variable: "可变",
+    creditor: "债权人",
+    interestRate: "利率",
+    consolidatedExpenses: "综合支出",
+    bestRates: "最佳融资利率",
+    financialHealthPlan: "AI 财务健康计划",
+    generatePlan: "生成计划",
+    noRatesFound: "未找到利率。",
+    noProjectFound: "未找到项目。",
+    tips: "提示",
+    goals: "目标",
+    total: "总计",
     protectionLevel: "保护级别",
     high: "高",
     panicButton: "紧急按钮",
@@ -2034,7 +2283,7 @@ const translations = {
     pharmacyPrompt: "离我最近的3家药店有哪些？请按“名称 (距离)”的格式列出。",
     unitsPrompt: "离我最近的5家医疗机构（UPA、卫生中心、医院、综合诊所）有哪些？请按“名称 (距离)”的格式列出。",
     leisurePrompt: "离我最近的3家{category}有哪些？请按“名称 (距离)”的格式列出。",
-    financialStability: "财务稳定",
+    financialStability: "防范诈骗和欺诈",
     antiFraudShieldActive: "反欺诈护盾激活",
     aiMonitoringDescription: "AI 实时监控链接和可疑消息。",
     generalConsultancies: "一般咨询",
@@ -2129,8 +2378,44 @@ const translations = {
     dark: "כהה",
     save: "שמור",
     selectLanguage: "בחר שפה",
-    welcome: "ברוכים הבאים ל-O GUARDIAO",
-    sentinelActive: "סנטינל פעיל",
+    welcomeTitle: "ברוכים הבאים ל-O GUARDIAO",
+    welcomeSubtitle: "מופעל על ידי האינטליגנציה המתקדמת של Gemini, סופר-אפליקציה זו משלבת טכנולוגיה מתקדמת עם אבטחה ברמה עולמית. פועלת על התשתית החזקה והשרתים המאובטחים במיוחד של גוגל, אנו מבטיחים שכל שורת קוד וכל פיסת נתונים שלך יקבלו את ההגנה והיעילות המקסימלית שהטכנולוגיה המודרנית יכולה להציע.",
+    welcomeStep1Title: "🛡️ הגנה מפני הונאות",
+    welcomeStep1Desc: "הדבק הודעות חשודות במודול 'מגן' לניתוח AI מיידי.",
+    welcomeStep2Title: "🚨 לחצן מצוקה",
+    welcomeStep2Desc: "במצבי חירום, האפליקציה מקליטה שמע, מנתחת את המצב ומתריעה לאנשי קשר מהימנים.",
+    welcomeStep3Title: "🗺️ מסלול בטוח",
+    welcomeStep3Desc: "תכנן מסלולים תוך הימנעות מאזורי סיכון בהתבסס על נתונים בזמן אמת.",
+    welcomeStep4Title: "🏥 בריאות וקהילה",
+    welcomeStep4Desc: "מצא בתי מרקחת, בתי חולים ושירותים מקומיים במהירות.",
+    getStarted: "התחל עכשיו",
+    tutorial: "מדריך",
+    edit: "ערוך",
+    delete: "מחק",
+    cancel: "ביטול",
+    update: "עדכן",
+    confirmDelete: "האם אתה בטוח שברצונך למחוק?",
+    recentExpenses: "הוצאות אחרונות",
+    recentDebts: "חובות אחרונים",
+    financialDescription: "ניהול הוצאות וחובות עם AI",
+    addExpense: "הוסף הוצאה",
+    addDebt: "הוסף חוב",
+    description: "תיאור",
+    value: "ערך",
+    category: "קטגוריה",
+    fixed: "קבוע",
+    variable: "משתנה",
+    creditor: "נושה",
+    interestRate: "שיעור ריבית",
+    consolidatedExpenses: "הוצאות מאוחדות",
+    bestRates: "שיעורי המימון הטובים ביותר",
+    financialHealthPlan: "תוכנית בריאות פיננסית AI",
+    generatePlan: "צור תוכנית",
+    noRatesFound: "לא נמצאו שיעורים.",
+    noProjectFound: "לא נמצא פרויקט.",
+    tips: "טיפים",
+    goals: "יעדים",
+    total: "סה\"כ",
     protectionLevel: "רמת הגנה",
     high: "גבוהה",
     panicButton: "לחצן מצוקה",
@@ -2244,7 +2529,7 @@ const translations = {
     pharmacyPrompt: "מהם 3 בתי המרקחת הקרובים ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
     unitsPrompt: "מהן 5 יחידות הבריאות (UPA, מרכזי בריאות, בתי חולים, פוליקליניקות) הקרובות ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
     leisurePrompt: "מהם 3 ה-{category} הקרובים ביותר אלי? רשום אותם בפורמט 'שם (מרחק)'.",
-    financialStability: "יציבות פיננסית",
+    financialStability: "הגנה מפני הונאות ומרמה",
     antiFraudShieldActive: "מגן נגד הונאות פעיל",
     aiMonitoringDescription: "AI מנטר קישורים והודעות חשודות בזמן אמת.",
     generalConsultancies: "ייעוץ כללי",
@@ -3019,6 +3304,9 @@ export default function App() {
   };
 
   // Financial Logic
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
+
   const addExpense = async (expense: Omit<Expense, 'id' | 'uid' | 'timestamp'>) => {
     if (!user) return;
     try {
@@ -3030,6 +3318,29 @@ export default function App() {
       showToast(t.save, 'success');
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'gastos');
+    }
+  };
+
+  const updateExpense = async (id: string, expense: Partial<Expense>) => {
+    if (!auth.currentUser) return;
+    try {
+      await updateDoc(doc(db, 'expenses', id), {
+        ...expense,
+        timestamp: serverTimestamp()
+      });
+      setEditingExpense(null);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `expenses/${id}`);
+    }
+  };
+
+  const deleteExpense = async (id: string) => {
+    if (!auth.currentUser) return;
+    if (!window.confirm(t.confirmDelete)) return;
+    try {
+      await deleteDoc(doc(db, 'expenses', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `expenses/${id}`);
     }
   };
 
@@ -3086,6 +3397,29 @@ export default function App() {
       showToast(t.quotaExceeded, 'error');
     } finally {
       setIsGeneratingProject(false);
+    }
+  };
+
+  const updateDebt = async (id: string, debt: Partial<Debt>) => {
+    if (!auth.currentUser) return;
+    try {
+      await updateDoc(doc(db, 'debts', id), {
+        ...debt,
+        timestamp: serverTimestamp()
+      });
+      setEditingDebt(null);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `debts/${id}`);
+    }
+  };
+
+  const deleteDebt = async (id: string) => {
+    if (!auth.currentUser) return;
+    if (!window.confirm(t.confirmDelete)) return;
+    try {
+      await deleteDoc(doc(db, 'debts', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `debts/${id}`);
     }
   };
 
@@ -3741,7 +4075,7 @@ export default function App() {
             <div className="p-6 space-y-4">
               <div className="text-center space-y-1">
                 <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">{t.welcomeTitle}</h2>
-                <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{t.welcomeSubtitle}</p>
+                <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{t.welcomeSubtitle}</p>
               </div>
 
               <div className="grid grid-cols-1 gap-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
@@ -4302,7 +4636,7 @@ export default function App() {
                   </div>
                 </section>
 
-                {/* Block 5: Financial Stability */}
+                {/* Block 5: Protection against Scams and Fraud */}
                 <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-8">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-black flex items-center gap-2 text-slate-900 dark:text-slate-100">
@@ -5162,15 +5496,15 @@ export default function App() {
                 {/* Expense Registration (Free) */}
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                    <PlusCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> {t.addExpense}
+                    <PlusCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> {editingExpense ? t.edit : t.addExpense}
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.description}</label>
                       <input 
                         type="text" 
-                        value={newExpense.descricao}
-                        onChange={(e) => setNewExpense({...newExpense, descricao: e.target.value})}
+                        value={editingExpense ? editingExpense.descricao : newExpense.descricao}
+                        onChange={(e) => editingExpense ? setEditingExpense({...editingExpense, descricao: e.target.value}) : setNewExpense({...newExpense, descricao: e.target.value})}
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
                         placeholder="Ex: Aluguel, Supermercado"
                       />
@@ -5180,16 +5514,16 @@ export default function App() {
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.value}</label>
                         <input 
                           type="number" 
-                          value={newExpense.valor}
-                          onChange={(e) => setNewExpense({...newExpense, valor: parseFloat(e.target.value) || 0})}
+                          value={editingExpense ? editingExpense.valor : newExpense.valor}
+                          onChange={(e) => editingExpense ? setEditingExpense({...editingExpense, valor: parseFloat(e.target.value) || 0}) : setNewExpense({...newExpense, valor: parseFloat(e.target.value) || 0})}
                           className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
                         />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.category}</label>
                         <select 
-                          value={newExpense.categoria}
-                          onChange={(e) => setNewExpense({...newExpense, categoria: e.target.value as any})}
+                          value={editingExpense ? editingExpense.categoria : newExpense.categoria}
+                          onChange={(e) => editingExpense ? setEditingExpense({...editingExpense, categoria: e.target.value as any}) : setNewExpense({...newExpense, categoria: e.target.value as any})}
                           className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
                         >
                           <option value="Fixa">{t.fixed}</option>
@@ -5197,27 +5531,51 @@ export default function App() {
                         </select>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => {
-                        addExpense(newExpense);
-                        setNewExpense({ descricao: '', valor: 0, categoria: 'Variável' });
-                      }}
-                      className="w-full py-3 bg-emerald-600 dark:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all"
-                    >
-                      {t.save}
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => {
+                          if (editingExpense) {
+                            updateExpense(editingExpense.id, editingExpense);
+                          } else {
+                            addExpense(newExpense);
+                            setNewExpense({ descricao: '', valor: 0, categoria: 'Variável' });
+                          }
+                        }}
+                        className="flex-1 py-3 bg-emerald-600 dark:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all"
+                      >
+                        {editingExpense ? t.update : t.save}
+                      </button>
+                      {editingExpense && (
+                        <button 
+                          onClick={() => setEditingExpense(null)}
+                          className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                        >
+                          {t.cancel}
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentExpenses}</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
                       {expenses.map(exp => (
-                        <div key={exp.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div>
+                        <div key={exp.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
+                          <div className="flex-1">
                             <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{exp.descricao}</p>
                             <p className="text-[8px] text-slate-400 uppercase font-black">{exp.categoria}</p>
                           </div>
-                          <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">R$ {exp.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                          <div className="flex items-center gap-3">
+                            <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">R$ {exp.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => setEditingExpense(exp)} className="p-1 text-slate-400 hover:text-indigo-500 transition-colors">
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => deleteExpense(exp.id)} className="p-1 text-slate-400 hover:text-rose-500 transition-colors">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -5227,7 +5585,7 @@ export default function App() {
                 {/* Debt Registration (PRO) */}
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" /> {t.addDebt}
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" /> {editingDebt ? t.edit : t.addDebt}
                   </h3>
                   <ProGuard>
                     <div className="space-y-4">
@@ -5235,8 +5593,8 @@ export default function App() {
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.creditor}</label>
                         <input 
                           type="text" 
-                          value={newDebt.credor}
-                          onChange={(e) => setNewDebt({...newDebt, credor: e.target.value})}
+                          value={editingDebt ? editingDebt.credor : newDebt.credor}
+                          onChange={(e) => editingDebt ? setEditingDebt({...editingDebt, credor: e.target.value}) : setNewDebt({...newDebt, credor: e.target.value})}
                           className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
                           placeholder="Ex: Banco X, Cartão Y"
                         />
@@ -5246,8 +5604,8 @@ export default function App() {
                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.value}</label>
                           <input 
                             type="number" 
-                            value={newDebt.valor}
-                            onChange={(e) => setNewDebt({...newDebt, valor: parseFloat(e.target.value) || 0})}
+                            value={editingDebt ? editingDebt.valor : newDebt.valor}
+                            onChange={(e) => editingDebt ? setEditingDebt({...editingDebt, valor: parseFloat(e.target.value) || 0}) : setNewDebt({...newDebt, valor: parseFloat(e.target.value) || 0})}
                             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
                           />
                         </div>
@@ -5255,33 +5613,57 @@ export default function App() {
                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.interestRate} (%)</label>
                           <input 
                             type="number" 
-                            value={newDebt.taxaJuros}
-                            onChange={(e) => setNewDebt({...newDebt, taxaJuros: parseFloat(e.target.value) || 0})}
+                            value={editingDebt ? editingDebt.taxaJuros : newDebt.taxaJuros}
+                            onChange={(e) => editingDebt ? setEditingDebt({...editingDebt, taxaJuros: parseFloat(e.target.value) || 0}) : setNewDebt({...newDebt, taxaJuros: parseFloat(e.target.value) || 0})}
                             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
                           />
                         </div>
                       </div>
-                      <button 
-                        onClick={() => {
-                          addDebt(newDebt);
-                          setNewDebt({ credor: '', valor: 0, taxaJuros: 0 });
-                        }}
-                        className="w-full py-3 bg-rose-600 dark:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-600 transition-all"
-                      >
-                        {t.save}
-                      </button>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => {
+                            if (editingDebt) {
+                              updateDebt(editingDebt.id, editingDebt);
+                            } else {
+                              addDebt(newDebt);
+                              setNewDebt({ credor: '', valor: 0, taxaJuros: 0 });
+                            }
+                          }}
+                          className="flex-1 py-3 bg-rose-600 dark:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-600 transition-all"
+                        >
+                          {editingDebt ? t.update : t.save}
+                        </button>
+                        {editingDebt && (
+                          <button 
+                            onClick={() => setEditingDebt(null)}
+                            className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                          >
+                            {t.cancel}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentDebts}</h4>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
                         {debts.map(debt => (
-                          <div key={debt.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                            <div>
+                          <div key={debt.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
+                            <div className="flex-1">
                               <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{debt.credor}</p>
                               <p className="text-[8px] text-slate-400 uppercase font-black">{debt.taxaJuros}% a.m.</p>
                             </div>
-                            <p className="text-xs font-black text-rose-600 dark:text-rose-400">R$ {debt.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                            <div className="flex items-center gap-3">
+                              <p className="text-xs font-black text-rose-600 dark:text-rose-400 whitespace-nowrap">R$ {debt.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => setEditingDebt(debt)} className="p-1 text-slate-400 hover:text-indigo-500 transition-colors">
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                <button onClick={() => deleteDebt(debt.id)} className="p-1 text-slate-400 hover:text-rose-500 transition-colors">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
