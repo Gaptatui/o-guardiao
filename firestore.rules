@@ -40,12 +40,11 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (request.auth.token.email == "gersonproenca@gmail.com");
-    }
-
-    function isPro() {
-      return isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.plan == 'pro';
+        (
+          (request.auth.token.email == "gersonproenca@gmail.com" && request.auth.token.email_verified == true) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true)
+        );
     }
 
     function isValidUser(data) {
@@ -72,6 +71,16 @@ service cloud.firestore {
              data.uid == request.auth.uid;
     }
 
+    function isValidReceita(data) {
+      return data.keys().hasAll(['descricao', 'valor', 'uid']) &&
+             data.descricao is string && data.descricao.size() > 0 && data.descricao.size() < 100 &&
+             data.valor is number && data.valor >= 0 &&
+             data.uid is string && data.uid == request.auth.uid &&
+             (!('categoria' in data) || (data.categoria is string && data.categoria.size() < 50)) &&
+             (!('data' in data) || data.data is string) &&
+             (!('timestamp' in data) || data.timestamp is number);
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -79,9 +88,9 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isAuthenticated() && (isOwner(uid) || isAdmin());
       allow create: if isOwner(uid) && isValidUser(request.resource.data) && 
-                      request.resource.data.isAdmin == false &&
-                      request.resource.data.isVip == false &&
-                      request.resource.data.plan == 'free';
+                      (request.resource.data.isAdmin == false || request.auth.token.email == "gersonproenca@gmail.com") &&
+                      (request.resource.data.isVip == false || request.auth.token.email == "gersonproenca@gmail.com") &&
+                      (request.resource.data.plan == 'free' || request.auth.token.email == "gersonproenca@gmail.com");
       
       // Em produção, campos de assinatura (plan, status, nextBillingDate) 
       // devem ser atualizados apenas via Backend/Webhooks do provedor de pagamento.
@@ -89,9 +98,9 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
                       isAdmin() || 
                       (isOwner(uid) && isValidUser(request.resource.data) && 
-                       request.resource.data.isAdmin == resource.data.isAdmin &&
-                       request.resource.data.isVip == resource.data.isVip &&
-                       (request.resource.data.plan == resource.data.plan || request.resource.data.plan == 'pro'))
+                       (request.resource.data.isAdmin == resource.data.isAdmin || request.auth.token.email == "gersonproenca@gmail.com") &&
+                       (request.resource.data.isVip == resource.data.isVip || request.auth.token.email == "gersonproenca@gmail.com") &&
+                       (request.resource.data.plan == resource.data.plan || request.resource.data.plan == 'pro' || request.auth.token.email == "gersonproenca@gmail.com"))
                     );
     }
 
@@ -139,6 +148,12 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    match /logs_medicacao/{logId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
     match /contatos_emergencia/{contatoId} {
       allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
@@ -149,6 +164,13 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
       allow update, delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    match /receitas/{receitaId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidReceita(request.resource.data);
+      allow update: if isAuthenticated() && resource.data.uid == request.auth.uid && isValidReceita(request.resource.data);
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
     }
 
     match /dividas/{dividaId} {

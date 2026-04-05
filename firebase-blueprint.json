@@ -80,6 +80,10 @@
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string" },
+        "name": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "birthDay": { "type": "number" },
+        "birthMonth": { "type": "number" },
         "plan": { "type": "string", "enum": ["free", "pro"] },
         "subscriptionStatus": { "type": "string", "enum": ["active", "inactive", "past_due"] },
         "subscriptionPeriod": { "type": "string", "enum": ["monthly", "yearly"] },
@@ -102,7 +106,9 @@
           "properties": {
             "name": { "type": "string" },
             "email": { "type": "string" },
-            "phone": { "type": "string" }
+            "phone": { "type": "string" },
+            "birthDay": { "type": "string" },
+            "birthMonth": { "type": "string" }
           }
         },
         "updatedAt": { "type": "number" }
@@ -166,6 +172,20 @@
       },
       "required": ["descricao", "valor", "tipo", "uid"]
     },
+    "Receita": {
+      "title": "Receita Financeira",
+      "description": "Registro de entradas financeiras (salário, extras, etc).",
+      "type": "object",
+      "properties": {
+        "descricao": { "type": "string" },
+        "valor": { "type": "number" },
+        "categoria": { "type": "string" },
+        "data": { "type": "string", "format": "date" },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["descricao", "valor", "uid"]
+    },
     "Divida": {
       "title": "Dívida Financeira",
       "description": "Registro de dívidas para consolidação e plano de quitação.",
@@ -192,6 +212,20 @@
         "timestamp": { "type": "number" }
       },
       "required": ["plano", "uid"]
+    },
+    "LogMedicacao": {
+      "title": "Log de Medicação",
+      "description": "Registro de quando um alarme de medicação foi disparado.",
+      "type": "object",
+      "properties": {
+        "medicationId": { "type": "string" },
+        "nome": { "type": "string" },
+        "horario": { "type": "string" },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["medicationId", "nome", "horario", "uid", "timestamp", "status"]
     }
   },
   "firestore": {
@@ -219,6 +253,10 @@
       "schema": "LembreteMedicao",
       "description": "Lembretes de remédios."
     },
+    "logs_medicacao/{logId}": {
+      "schema": "LogMedicacao",
+      "description": "Logs de alarmes de medicação."
+    },
     "mercado_talentos/{servicoId}": {
       "schema": "ServicoTalento",
       "description": "Serviços oferecidos na comunidade."
@@ -238,6 +276,10 @@
     "gastos/{gastoId}": {
       "schema": "Gasto",
       "description": "Gastos fixos e variáveis do usuário."
+    },
+    "receitas/{receitaId}": {
+      "schema": "Receita",
+      "description": "Receitas e entradas financeiras do usuário."
     },
     "dividas/{dividaId}": {
       "schema": "Divida",

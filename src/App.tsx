@@ -13,8 +13,10 @@ import {
   Search, Plus, CheckCircle2, XCircle, AlertCircle, ChevronRight, ChevronLeft,
   ExternalLink, Clapperboard, ShoppingBag, Theater, Beer, Utensils,
   ShoppingBasket, Store, Menu, Star, Moon, Sun, HelpCircle,
-  PlusCircle, BarChart3, RefreshCw, Sparkles, Edit2, Edit
+  PlusCircle, BarChart3, RefreshCw, Sparkles, Edit2, Edit,
+  ArrowUpCircle
 } from 'lucide-react';
+import Markdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   signInWithPopup, GoogleAuthProvider, onAuthStateChanged, 
@@ -169,6 +171,9 @@ interface UserProfile {
   uid: string;
   email: string;
   name?: string;
+  photoURL?: string;
+  birthDay?: number;
+  birthMonth?: number;
   plan: 'free' | 'pro';
   isAdmin: boolean;
   isVip?: boolean;
@@ -194,6 +199,16 @@ interface UsageLog {
   id?: string;
   uid: string;
   modulo: 'golpes' | 'emergencia' | 'rota_segura' | 'saude' | 'talentos' | 'financeiro';
+  timestamp: number;
+}
+
+interface Income {
+  id: string;
+  descricao: string;
+  valor: number;
+  categoria: string;
+  data: string;
+  uid: string;
   timestamp: number;
 }
 
@@ -439,6 +454,15 @@ const translations = {
     noDebts: "Nenhuma dívida registrada.",
     generatingProject: "Gerando seu projeto financeiro com IA...",
     searchingRates: "Buscando melhores taxas no mercado...",
+    addIncome: "Adicionar Receita",
+    recentIncomes: "Receitas Recentes",
+    noIncomes: "Nenhuma receita registrada.",
+    smartSearch: "Busca Inteligente de Preços",
+    searchPlaceholder: "O que você deseja comprar?",
+    searching: "Pesquisando...",
+    bestOnline: "Melhor Preço Online",
+    localOption: "Opção Local (Santos/SP)",
+    openInMaps: "Abrir no Maps",
     theater: "Teatro",
     bar: "Bar",
     restaurant: "Restaurante",
@@ -552,6 +576,22 @@ const translations = {
     activateMonitoringAlert: "Ative o monitoramento de pelo menos um aplicativo para simular.",
     scamDetectedAlert: "[ESCUDO ATIVO] Golpe detectado no {app} e bloqueado automaticamente!",
     settingsSavedAlert: "Configurações salvas!",
+    birthDay: "Dia de Aniversário",
+    birthMonth: "Mês de Aniversário",
+    happyBirthday: "Feliz Aniversário!",
+    birthdayMessage: "A equipe O Guardião deseja a você um dia repleto de segurança e alegria!",
+    january: "Janeiro",
+    february: "Fevereiro",
+    march: "Março",
+    april: "Abril",
+    may: "Maio",
+    june: "Junho",
+    july: "Julho",
+    august: "Agosto",
+    september: "Setembro",
+    october: "Outubro",
+    november: "Novembro",
+    december: "Dezembro",
     emergencyCallAlert: "Chamando {service}... Escuta de ambiente ativada para sua segurança.",
     audioAnalyzedAlert: "Áudio enviado e analisado. Autoridades e contatos seguros foram notificados.",
     fallDetectedAlert: "QUEDA DETECTADA! Iniciando protocolo de emergência em 10 segundos...",
@@ -794,10 +834,36 @@ const translations = {
     deleteContact: "Delete Contact",
     later: "Later",
     okUnderstood: "Ok, understood",
-    leisureCulture: "LEISURE & CULTURE",
-    findLeisure: "Find Leisure",
-    cinema: "Cinema",
-    mall: "Mall",
+    financial: "Financial",
+    fixedExpenses: "Fixed Expenses",
+    variableExpenses: "Variable Expenses",
+    date: "Date",
+    type: "Type",
+    totalExpenses: "Total Expenses",
+    debts: "Debts",
+    totalValue: "Total Value",
+    dueDate: "Due Date",
+    financialProject: "Financial Project",
+    generateProject: "Generate Financial Health Project",
+    financingSearch: "Search for Best Financing Rates",
+    debtConsolidation: "Debt Consolidation",
+    proFeature: "PRO Feature",
+    upgradeToProFinance: "Subscribe to PRO to consolidate debts and generate your personalized financial plan.",
+    financingOptions: "Financing Options",
+    financialSummary: "Financial Summary",
+    noExpenses: "No expenses registered.",
+    noDebts: "No debts registered.",
+    generatingProject: "Generating your financial project with AI...",
+    searchingRates: "Searching for best rates in the market...",
+    addIncome: "Add Income",
+    recentIncomes: "Recent Incomes",
+    noIncomes: "No income registered.",
+    smartSearch: "Smart Price Search",
+    searchPlaceholder: "What do you want to buy?",
+    searching: "Searching...",
+    bestOnline: "Best Online Price",
+    localOption: "Local Option (Santos/SP)",
+    openInMaps: "Open in Maps",
     theater: "Theater",
     bar: "Bar",
     restaurant: "Restaurant",
@@ -911,6 +977,22 @@ const translations = {
     activateMonitoringAlert: "Activate monitoring for at least one app to simulate.",
     scamDetectedAlert: "[ACTIVE SHIELD] Scam detected in {app} and automatically blocked!",
     settingsSavedAlert: "Settings saved!",
+    birthDay: "Birthday Day",
+    birthMonth: "Birthday Month",
+    happyBirthday: "Happy Birthday!",
+    birthdayMessage: "The O Guardião team wishes you a day full of safety and joy!",
+    january: "January",
+    february: "February",
+    march: "March",
+    april: "April",
+    may: "May",
+    june: "June",
+    july: "July",
+    august: "August",
+    september: "September",
+    october: "October",
+    november: "November",
+    december: "December",
     emergencyCallAlert: "Calling {service}... Ambient listening activated for your safety.",
     audioAnalyzedAlert: "Audio sent and analyzed. Authorities and safe contacts have been notified.",
     fallDetectedAlert: "FALL DETECTED! Starting emergency protocol in 10 seconds...",
@@ -971,6 +1053,7 @@ const translations = {
     emergency: "Emergencia",
     scam: "Estafas",
     settings: "Configuración",
+    adminPanel: "Administración",
     personalData: "Datos Personales",
     language: "Idioma",
     name: "Nombre",
@@ -981,6 +1064,10 @@ const translations = {
     dark: "Oscuro",
     save: "Guardar",
     selectLanguage: "Seleccione el Idioma",
+    welcome: "Bienvenido a O GUARDIAO",
+    quotaExceeded: "Cuota de API excedida. Inténtelo de nuevo en unos momentos.",
+    refresh: "Actualizar",
+    sentinelActive: "SENTINELA ACTIVO",
     welcomeTitle: "Bienvenido a O GUARDIAO",
     welcomeSubtitle: "Impulsada por la inteligencia avanzada de Gemini, esta súper aplicación combina tecnología de vanguardia con seguridad de clase mundial. Al operar sobre la robusta infraestructura y los servidores ultra seguros de Google, garantizamos que cada línea de código y cada dato suyo reciba la máxima protección y eficiencia que la tecnología moderna puede ofrecer.",
     welcomeStep1Title: "🛡️ Protección contra Estafas",
@@ -988,7 +1075,7 @@ const translations = {
     welcomeStep2Title: "🚨 Botón de Pánico",
     welcomeStep2Desc: "En emergencias, la aplicación graba audio, analiza la situación y alerta a los contactos de confianza.",
     welcomeStep3Title: "🗺️ Ruta Segura",
-    welcomeStep3Desc: "Planifique rutas evitando áreas de riesgo basadas en datos en tempo real.",
+    welcomeStep3Desc: "Planifique rutas evitando áreas de riesgo basadas en datos en tiempo real.",
     welcomeStep4Title: "🏥 Salud y Comunidad",
     welcomeStep4Desc: "Encuentre farmacias, hospitales y servicios locales rápidamente.",
     getStarted: "Empezar Ahora",
@@ -998,11 +1085,36 @@ const translations = {
     cancel: "Cancelar",
     update: "Actualizar",
     confirmDelete: "¿Estás seguro de que quieres eliminar?",
-    recentExpenses: "Gastos Recientes",
-    recentDebts: "Deudas Recientes",
-    financialDescription: "Gestión de gastos y deudas con IA",
-    addExpense: "Añadir Gasto",
-    addDebt: "Añadir Deuda",
+    financial: "Financiero",
+    fixedExpenses: "Gastos Fijos",
+    variableExpenses: "Gastos Variables",
+    date: "Fecha",
+    type: "Tipo",
+    totalExpenses: "Total de Gastos",
+    debts: "Deudas",
+    totalValue: "Valor Total",
+    dueDate: "Vencimiento",
+    financialProject: "Proyecto Financiero",
+    generateProject: "Generar Proyecto de Salud Financiera",
+    financingSearch: "Buscar Mejores Tasas de Financiamento",
+    debtConsolidation: "Consolidación de Deudas",
+    proFeature: "Funcionalidad PRO",
+    upgradeToProFinance: "Suscríbase al PRO para consolidar deudas y generar su plan financiero personalizado.",
+    financingOptions: "Opciones de Financiamento",
+    financialSummary: "Resumen Financiero",
+    noExpenses: "No hay gastos registrados.",
+    noDebts: "No hay deudas registradas.",
+    generatingProject: "Generando su proyecto financiero con IA...",
+    searchingRates: "Buscando las mejores tasas en el mercado...",
+    addIncome: "Añadir Ingreso",
+    recentIncomes: "Ingresos Recientes",
+    noIncomes: "Ningún ingreso registrado.",
+    smartSearch: "Búsqueda Inteligente de Precios",
+    searchPlaceholder: "¿Qué desea comprar?",
+    searching: "Buscando...",
+    bestOnline: "Mejor Precio Online",
+    localOption: "Opción Local (Santos/SP)",
+    openInMaps: "Abrir en Maps",
     description: "Descripción",
     value: "Valor",
     category: "Categoría",
@@ -1033,24 +1145,43 @@ const translations = {
     back: "Volver",
     logout: "Cerrar sesión",
     login: "Entrar con Google",
+    fontSize: "Tamaño de Letra",
+    signLanguage: "Lengua de Señas",
+    emergencyContacts: "Contactos de Emergencia",
+    addShortcut: "Añadir Acceso Directo",
+    shortcutSuggestion: "¿Desea añadir un acceso directo de O GUARDIAO a su pantalla de inicio para un acceso rápido?",
+    permissionsGuide: "Guía de Permisos",
+    permissionsDescription: "Para su total seguridad, necesitamos acceso a la ubicación, micrófono y contactos.",
+    openSettings: "Abrir Configuración",
+    pixPayment: "Pago vía Pix",
+    creditCard: "Tarjeta de Crédito",
+    planControl: "Control de Planes",
+    monthlyValue: "Valor Mensual",
+    yearlyValue: "Valor Anual",
+    emergencyContactName: "Nombre del Contacto",
+    emergencyContactPhone: "Teléfono",
+    emergencyContactRelation: "Parentesco",
+    deleteContact: "Eliminar Contacto",
+    later: "Más tarde",
+    okUnderstood: "Ok, entiendo",
     healthProfile: "Perfil de Salud",
     medications: "Medicamentos",
     neighborAlerts: "Alertas de Vecindad",
     talentMarket: "Mercado de Talentos",
     safeRoute: "Ruta Segura",
     calculating: "Calculando...",
-    calculate: "Calcular Rota",
+    calculate: "Calcular Ruta",
     panicDescription: "Activa policía y contactos seguros inmediatamente",
     scamDescription: "Links y SMS",
     emergencyDescription: "Análisis de Audio",
-    settingsDescription: "Perfil e Preferencias",
+    settingsDescription: "Perfil y Preferencias",
     autoListening: "Escucha Automática",
     responseMode: "Modo de Respuesta",
-    autoDescription: "* O GUARDIAO bloqueará enlaces e notificará contactos automáticamente al detectar estafas.",
+    autoDescription: "* O GUARDIAO bloqueará enlaces y notificará contactos automáticamente al detectar estafas.",
     manualDescription: "* Se le notificará para decidir la acción ante cada amenaza detectada.",
     simulateNotification: "Simular Notificación Sospechosa",
     activityLog: "REGISTRO DE ACTIVIDADES",
-    clear: "Limpar",
+    clear: "Limpiar",
     blockedAuto: "BLOQUEADO AUTOMÁTICAMENTE",
     blockedUser: "BLOQUEADO POR EL USUARIO",
     ignoredUser: "IGNORADO POR EL USUARIO",
@@ -1064,8 +1195,8 @@ const translations = {
     directActivation: "Activación Directa",
     medicalEmergency: "Emergencia Médica",
     realTimeListening: "Escucha en Tiempo Real",
-    listeningDescription: "O GUARDIAO escuchará o áudio local en emergencias.",
-    localAudioActive: "Audio Local Ativo",
+    listeningDescription: "O GUARDIAO escuchará el audio local en emergencias.",
+    localAudioActive: "Audio Local Activo",
     safeContacts: "Contactos de Seguridad",
     addNewContact: "Agregar Nuevo Contacto",
     saveContact: "Guardar Contacto",
@@ -1106,15 +1237,15 @@ const translations = {
     nextMedication: "Próximo Medicamento",
     noActiveReminders: "Sin recordatorios activos.",
     universalWallet: "Billetera Universal",
-    qrCodeDescription: "Código QR cifrado con su historial vital para socorristas.",
+    qrCodeDescription: "Código QR encriptado con su historial vital para socorristas.",
     manageMedicalData: "Gestionar Datos Médicos",
     manageMedications: "Gestionar Medicamentos",
-    addMedication: "Agregar Medicamento",
+    addMedication: "Añadir Medicamento",
     editMedication: "Editar Medicamento",
     deleteMedication: "Eliminar Medicamento",
     medicationName: "Nombre del Medicamento",
     medicationTime: "Horario",
-    medicationDosage: "Dosificación",
+    medicationDosage: "Dosis",
     continuousUse: "Uso Continuo",
     startDate: "Fecha de Inicio",
     endDate: "Fecha de Fin",
@@ -1122,10 +1253,25 @@ const translations = {
     medicationDeleted: "¡Medicamento eliminado!",
     medicationAlarm: "¡Hora del Medicamento!",
     takeNow: "Tomar Ahora",
-    noMedications: "Ningún medicamento registrado.",
+    testAlarm: "Probar Alarma",
+    medicationLogs: "Registros de Medicamentos",
+    noMedications: "No hay medicamentos registrados.",
     nearbyUnits: "Unidades de Salud Cercanas en Santos",
     nearbyPharmacies: "Farmacias Cercanas",
     findPharmacies: "Buscar Farmacias",
+    findMyCar: "¿Dónde dejé mi coche?",
+    markCarLocation: "Marcar Ubicación del Coche",
+    carLocationSaved: "¡Ubicación del coche guardada!",
+    returnToCar: "Ruta de Regreso al Coche",
+    carNotMarked: "Ninguna ubicación de coche marcada.",
+    carLocationDescription: "Guarde la ubicación actual para encontrar su vehículo después.",
+    carReminder: "Recordatorio de Regreso",
+    carReminderInterval: "Intervalo de Recordatorio (min)",
+    carAutoDisable: "Desactivar Automáticamente (min)",
+    carReminderActive: "Monitoreo de Estacionamiento Activo",
+    carReminderDisabled: "Monitoreo Desactivado",
+    carReminderToast: "Recordatorio: Su coche está estacionado. ¿Desea regresar ahora?",
+    carAutoDisabledToast: "Monitoreo de estacionamiento finalizado automáticamente.",
     leisureCulture: "OCIO Y CULTURA",
     findLeisure: "Encontrar Ocio",
     cinema: "Cine",
@@ -1146,7 +1292,64 @@ const translations = {
     healthy: "Saludable",
     pizza: "Pizza",
     seafood: "Mariscos",
-    pharmacyPrompt: "¿Cuáles son las 3 farmacias más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
+    freePlan: "Plan Gratuito",
+    proPlan: "Plan PRO",
+    upgradeToPro: "Upgrade a PRO",
+    proFeatureTitle: "Funcionalidad PRO",
+    proFeatureDescription: "Esta funcionalidad solo está disponible para usuarios PRO. ¡Haga el upgrade ahora para protección total!",
+    upgradeNow: "Hacer Upgrade Ahora",
+    currentPlan: "Plan Actual",
+    benefitsPro: "Beneficios del Plan PRO:",
+    benefit1: "• Análisis de Audio IA Ilimitado",
+    benefit2: "• Planificación de Rutas Seguras Avanzada",
+    benefit3: "• Monitoreo de Dispositivos Ilimitado",
+    benefit4: "• Consultoría Estratégica Exclusiva",
+    benefit5: "• Soporte Prioritario 24/7",
+    checkoutTitle: "Finalizar Suscripción PRO",
+    checkoutSubtitle: "Está a un paso de la protección total.",
+    cardNumber: "Número de Tarjeta",
+    expiryDate: "Validez",
+    cvv: "CVV",
+    confirmPurchase: "Confirmar Suscripción",
+    processing: "Procesando...",
+    purchaseSuccess: "¡Suscripción PRO activada con éxito!",
+    proBadge: "PRO",
+    pricePro: "$ 9.90/mes",
+    priceProYearly: "$ 99.00/año",
+    saveYearly: "Ahorre 15%",
+    subscriptionDetails: "Detalles de la Suscripción",
+    status: "Estado",
+    active: "Activa",
+    inactive: "Inactiva",
+    periodicity: "Periodicidad",
+    monthly: "Mensual",
+    yearly: "Anual",
+    nextBilling: "Próximo Facturación",
+    paymentMethodLabel: "Forma de Pago",
+    cancelSubscription: "Cancelar Suscripción",
+    cancelConfirmTitle: "¿Cancelar Plan PRO?",
+    cancelConfirmMessage: "Perderá acceso a todas las funcionalidades exclusivas al final del período actual. ¿Está seguro?",
+    subscriptionCancelled: "Su suscripción ha sido cancelada.",
+    userManagement: "Gestión de Usuarios",
+    userEmail: "Email del Usuario",
+    userPlan: "Plan",
+    userRole: "Rol",
+    makeAdmin: "Hacer Admin",
+    removeAdmin: "Eliminar Admin",
+    makeVip: "Marcar como VIP",
+    removeVip: "Eliminar VIP",
+    setPro: "Definir como PRO",
+    setFree: "Definir como Gratis",
+    userUpdated: "¡Usuario actualizado con éxito!",
+    vipBadge: "VIP",
+    financeMetrics: "Finanzas y Métricas",
+    revenue: "Ingresos Totales",
+    activeSubscribers: "Suscriptores Activos",
+    modulePopularity: "Popularidad de Módulos",
+    revenueOverTime: "Ingresos a lo largo del tiempo",
+    usageLogs: "Logs de Uso",
+    noData: "Sin datos para mostrar.",
+    pharmacyPrompt: "¿Cuáles son las 3 farmacias más cercanas a mí? Enumérelas en el formato 'Nombre (Distancia)'.",
     unitsPrompt: "¿Cuáles son las 5 unidades de salud (UPAs, centros de salud, hospitales, policlínicas) más cercanas a mí? Enuméralas en el formato 'Nombre (Distancia)'.",
     leisurePrompt: "¿Cuáles son los 3 {category} más cercanos a mí? Enuméralos en el formato 'Nombre (Distancia) [Calificación]'. La calificación debe ser un número de 0 a 5.",
     financialStability: "PROTECCIÓN CONTRA ESTAFAS Y FRAUDES",
@@ -1174,6 +1377,22 @@ const translations = {
     activateMonitoringAlert: "Active el monitoreo de al menos una aplicación para simular.",
     scamDetectedAlert: "[ESCUDO ACTIVO] ¡Estafa detectada en {app} y bloqueada automáticamente!",
     settingsSavedAlert: "¡Configuraciones guardadas!",
+    birthDay: "Día de Cumpleaños",
+    birthMonth: "Mes de Cumpleaños",
+    happyBirthday: "¡Feliz Cumpleaños!",
+    birthdayMessage: "¡El equipo de O Guardião le desea un día lleno de seguridad y alegría!",
+    january: "Enero",
+    february: "Febrero",
+    march: "Marzo",
+    april: "Abril",
+    may: "Mayo",
+    june: "Junio",
+    july: "Julio",
+    august: "Agosto",
+    september: "Septiembre",
+    october: "Octubre",
+    november: "Noviembre",
+    december: "Diciembre",
     emergencyCallAlert: "Llamando a {service}... Escucha de ambiente activada para su seguridad.",
     audioAnalyzedAlert: "Audio enviado y analizado. Las autoridades y los contactos seguros han sido notificados.",
     fallDetectedAlert: "¡CAÍDA DETECTADA! Iniciando protocolo de emergencia en 10 segundos...",
@@ -2836,9 +3055,34 @@ export default function App() {
   const [personalData, setPersonalData] = useState({
     name: '',
     email: '',
-    phone: ''
+    phone: '',
+    birthDay: '',
+    birthMonth: ''
   });
   const t = translations[language];
+
+  const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
+    const errInfo: FirestoreErrorInfo = {
+      error: error instanceof Error ? error.message : String(error),
+      authInfo: {
+        userId: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        emailVerified: auth.currentUser?.emailVerified,
+        isAnonymous: auth.currentUser?.isAnonymous,
+        tenantId: auth.currentUser?.tenantId,
+        providerInfo: auth.currentUser?.providerData.map(provider => ({
+          providerId: provider.providerId,
+          displayName: provider.displayName,
+          email: provider.email,
+          photoUrl: provider.photoURL
+        })) || []
+      },
+      operationType,
+      path
+    }
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    // throw new Error(JSON.stringify(errInfo)); // Don't throw to avoid crashing the whole app, but log it.
+  };
 
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -2846,10 +3090,12 @@ export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [usageLogs, setUsageLogs] = useState<UsageLog[]>([]);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const isAdmin = user?.email === 'gersonproenca@gmail.com' || userProfile?.isAdmin === true;
+  const isAdmin = (user?.email === 'gersonproenca@gmail.com' && user?.emailVerified) || userProfile?.isAdmin === true;
   const [showCheckout, setShowCheckout] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [isProcessingPurchase, setIsProcessingPurchase] = useState(false);
+  const [hasShownBirthdayMessage, setHasShownBirthdayMessage] = useState(false);
+  const [showBirthdayModal, setShowBirthdayModal] = useState(false);
   
   // Sentinel State
   const [panicActive, setPanicActive] = useState(false);
@@ -2870,10 +3116,23 @@ export default function App() {
   const [showSignLanguage, setShowSignLanguage] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [newIncome, setNewIncome] = useState<Omit<Income, 'id' | 'uid' | 'timestamp'>>({
+    descricao: '',
+    valor: 0,
+    categoria: 'Fixa',
+    data: new Date().toISOString().split('T')[0]
+  });
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
   const [debts, setDebts] = useState<Debt[]>([]);
   const [financialProject, setFinancialProject] = useState<FinancialProject | null>(null);
   const [isGeneratingProject, setIsGeneratingProject] = useState(false);
   const [isSearchingRates, setIsSearchingRates] = useState(false);
+  const [isSearchingProduct, setIsSearchingProduct] = useState(false);
+  const [productSearchResult, setProductSearchResult] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [financingOptions, setFinancingOptions] = useState<any[]>([]);
   const [showShortcutSuggestion, setShowShortcutSuggestion] = useState(false);
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
@@ -2927,28 +3186,34 @@ export default function App() {
       const q = query(collection(db, 'contatos_emergencia'), where('uid', '==', user.uid));
       const unsub = onSnapshot(q, (snapshot) => {
         setEmergencyContacts(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      });
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'contatos_emergencia'));
 
       const qExpenses = query(collection(db, 'gastos'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'));
       const unsubExpenses = onSnapshot(qExpenses, (snapshot) => {
         setExpenses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense)));
-      });
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'gastos'));
+
+      const qIncomes = query(collection(db, 'receitas'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'));
+      const unsubIncomes = onSnapshot(qIncomes, (snapshot) => {
+        setIncomes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Income)));
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'receitas'));
 
       const qDebts = query(collection(db, 'dividas'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'));
       const unsubDebts = onSnapshot(qDebts, (snapshot) => {
         setDebts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Debt)));
-      });
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'dividas'));
 
       const qProject = query(collection(db, 'projetos_financeiros'), where('uid', '==', user.uid), orderBy('timestamp', 'desc'), limit(1));
       const unsubProject = onSnapshot(qProject, (snapshot) => {
         if (!snapshot.empty) {
           setFinancialProject({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as FinancialProject);
         }
-      });
+      }, (err) => handleFirestoreError(err, OperationType.LIST, 'projetos_financeiros'));
 
       return () => {
         unsub();
         unsubExpenses();
+        unsubIncomes();
         unsubDebts();
         unsubProject();
       };
@@ -3186,10 +3451,15 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, 'logs_medicacao'), orderBy('timestamp', 'desc'), limit(20));
+    const q = query(
+      collection(db, 'logs_medicacao'), 
+      where('uid', '==', user.uid),
+      orderBy('timestamp', 'desc'), 
+      limit(20)
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMedicationLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+    }, (err) => handleFirestoreError(err, OperationType.LIST, 'logs_medicacao'));
     return () => unsubscribe();
   }, [user]);
   const [services, setServices] = useState<TalentService[]>([]);
@@ -3280,8 +3550,19 @@ export default function App() {
   const [leisureCache, setLeisureCache] = useState<Record<string, any[]>>({});
   const [leisureCategory, setLeisureCategory] = useState<'cinema' | 'mall' | 'theater' | 'bar' | 'restaurant' | 'supermarket' | 'bakery'>('cinema');
   const [leisureSubCategory, setLeisureSubCategory] = useState<string>('');
-  const [newExpense, setNewExpense] = useState({ descricao: '', valor: 0, categoria: 'Variável' as 'Fixa' | 'Variável' });
-  const [newDebt, setNewDebt] = useState({ credor: '', valor: 0, taxaJuros: 0 });
+  const [newExpense, setNewExpense] = useState<Omit<Expense, 'id' | 'uid' | 'timestamp'>>({ 
+    descricao: '', 
+    valor: 0, 
+    categoria: 'Variável',
+    data: new Date().toISOString().split('T')[0],
+    tipo: 'variavel'
+  });
+  const [newDebt, setNewDebt] = useState<Omit<Debt, 'id' | 'uid' | 'timestamp'>>({ 
+    credor: '', 
+    valorTotal: 0, 
+    taxaJuros: 0,
+    vencimento: new Date().toISOString().split('T')[0]
+  });
   const [alertasList, setAlertasList] = useState<Alerta[]>([]);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -3654,8 +3935,86 @@ export default function App() {
   };
 
   // Financial Logic
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
+  const addIncome = async (income: Omit<Income, 'id' | 'uid' | 'timestamp'>) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'receitas'), {
+        ...income,
+        uid: user.uid,
+        timestamp: Date.now()
+      });
+      showToast(t.save, 'success');
+      logModuleUsage('financeiro');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'receitas');
+    }
+  };
+
+  const updateIncome = async (id: string, income: Partial<Income>) => {
+    if (!auth.currentUser) return;
+    try {
+      await updateDoc(doc(db, 'receitas', id), {
+        ...income,
+        timestamp: serverTimestamp()
+      });
+      setEditingIncome(null);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `receitas/${id}`);
+    }
+  };
+
+  const deleteIncome = async (id: string) => {
+    if (!auth.currentUser) return;
+    if (!window.confirm(t.confirmDelete)) return;
+    try {
+      await deleteDoc(doc(db, 'receitas', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `receitas/${id}`);
+    }
+  };
+
+  const searchProduct = async () => {
+    if (!searchQuery.trim()) return;
+    if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true) {
+      setShowCheckout(true);
+      return;
+    }
+    setIsSearchingProduct(true);
+    setProductSearchResult(null);
+    logModuleUsage('financeiro');
+    
+    try {
+      const response = await genAI.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Pesquise sobre o produto: ${searchQuery}`,
+        config: {
+          systemInstruction: `Você é o motor de busca inteligente de um "Super App" focado em economia e segurança.
+Sua missão é ajudar o usuário a encontrar produtos combinando buscas online e lojas físicas próximas.
+
+DIRETRIZES DE RESPOSTA:
+1. PESQUISA ONLINE: Liste 3 opções de lojas confiáveis com preços competitivos.
+2. PESQUISA LOCAL: Identifique lojas físicas na região do usuário (Santos/SP) que possuam o item.
+3. CRITÉRIO DE SEGURANÇA: Apenas recomende lojas com boas avaliações (mínimo 4 estrelas).
+4. COMPARAÇÃO DE PREÇO: Sempre destaque qual é a opção mais barata no total (considerando frete vs. deslocamento).
+5. FORMATO DE SAÍDA:
+   - Nome do Produto
+   - [MELHOR PREÇO ONLINE]: Valor + Link
+   - [OPÇÃO LOCAL]: Nome da Loja + Endereço + Botão simbólico para "Abrir no Maps"
+   - Veredito: "Vale mais a pena comprar [Online/Local] porque..."
+
+Sempre use um tom prestativo e direto.`,
+          tools: [{ googleSearch: {} }],
+        },
+      });
+      
+      setProductSearchResult(response.text || "Nenhum resultado encontrado.");
+    } catch (error) {
+      console.error("Error searching product:", error);
+      showToast("Erro ao realizar busca inteligente.", "error");
+    } finally {
+      setIsSearchingProduct(false);
+    }
+  };
 
   const addExpense = async (expense: Omit<Expense, 'id' | 'uid' | 'timestamp'>) => {
     if (!user) return;
@@ -3674,13 +4033,13 @@ export default function App() {
   const updateExpense = async (id: string, expense: Partial<Expense>) => {
     if (!auth.currentUser) return;
     try {
-      await updateDoc(doc(db, 'expenses', id), {
+      await updateDoc(doc(db, 'gastos', id), {
         ...expense,
         timestamp: serverTimestamp()
       });
       setEditingExpense(null);
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `expenses/${id}`);
+      handleFirestoreError(error, OperationType.UPDATE, `gastos/${id}`);
     }
   };
 
@@ -3688,9 +4047,9 @@ export default function App() {
     if (!auth.currentUser) return;
     if (!window.confirm(t.confirmDelete)) return;
     try {
-      await deleteDoc(doc(db, 'expenses', id));
+      await deleteDoc(doc(db, 'gastos', id));
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `expenses/${id}`);
+      handleFirestoreError(error, OperationType.DELETE, `gastos/${id}`);
     }
   };
 
@@ -3753,13 +4112,13 @@ export default function App() {
   const updateDebt = async (id: string, debt: Partial<Debt>) => {
     if (!auth.currentUser) return;
     try {
-      await updateDoc(doc(db, 'debts', id), {
+      await updateDoc(doc(db, 'dividas', id), {
         ...debt,
         timestamp: serverTimestamp()
       });
       setEditingDebt(null);
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `debts/${id}`);
+      handleFirestoreError(error, OperationType.UPDATE, `dividas/${id}`);
     }
   };
 
@@ -3767,9 +4126,9 @@ export default function App() {
     if (!auth.currentUser) return;
     if (!window.confirm(t.confirmDelete)) return;
     try {
-      await deleteDoc(doc(db, 'debts', id));
+      await deleteDoc(doc(db, 'dividas', id));
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `debts/${id}`);
+      handleFirestoreError(error, OperationType.DELETE, `dividas/${id}`);
     }
   };
 
@@ -3870,20 +4229,6 @@ export default function App() {
     }
   };
 
-  const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
-    const errInfo: FirestoreErrorInfo = {
-      error: error instanceof Error ? error.message : String(error),
-      authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-      },
-      operationType,
-      path
-    };
-    console.error('Firestore Error: ', JSON.stringify(errInfo));
-    // In a real app, show a toast or error boundary
-  };
-
   const saveSettings = async () => {
     if (!user) return;
     try {
@@ -3892,6 +4237,14 @@ export default function App() {
         personalData,
         updatedAt: Date.now()
       });
+      
+      // Sync to UserProfile
+      await updateDoc(doc(db, 'users', user.uid), {
+        name: personalData.name,
+        birthDay: parseInt(personalData.birthDay) || 0,
+        birthMonth: parseInt(personalData.birthMonth) || 0
+      });
+
       showToast(t.settingsSavedAlert, 'success');
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `configuracoes_usuario/${user.uid}`);
@@ -3911,7 +4264,9 @@ export default function App() {
         const initialData = {
           name: u.displayName || '',
           email: u.email || '',
-          phone: ''
+          phone: '',
+          birthDay: '',
+          birthMonth: ''
         };
         await setDoc(docRef, {
           language: 'pt',
@@ -3936,10 +4291,18 @@ export default function App() {
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             const data = userSnap.data() as UserProfile;
-            // Update name if missing or changed
+            // Update name/photo if missing or changed
+            let updated = false;
             if (!data.name && u.displayName) {
-              await updateDoc(userRef, { name: u.displayName });
               data.name = u.displayName;
+              updated = true;
+            }
+            if (!data.photoURL && u.photoURL) {
+              data.photoURL = u.photoURL;
+              updated = true;
+            }
+            if (updated) {
+              await updateDoc(userRef, { name: data.name, photoURL: data.photoURL });
             }
             setUserProfile(data);
           } else {
@@ -3947,6 +4310,7 @@ export default function App() {
               uid: u.uid,
               email: u.email || "",
               name: u.displayName || "",
+              photoURL: u.photoURL || "",
               plan: 'free',
               isAdmin: u.email === "gersonproenca@gmail.com",
               isVip: false,
@@ -3973,6 +4337,19 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (userProfile && userProfile.birthDay && userProfile.birthMonth && !hasShownBirthdayMessage) {
+      const today = new Date();
+      const day = today.getDate();
+      const month = today.getMonth() + 1;
+
+      if (userProfile.birthDay === day && userProfile.birthMonth === month) {
+        setShowBirthdayModal(true);
+        setHasShownBirthdayMessage(true);
+      }
+    }
+  }, [userProfile, hasShownBirthdayMessage]);
 
   const upgradeToPro = async () => {
     if (!user) return;
@@ -4486,7 +4863,21 @@ export default function App() {
             </button>
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-slate-400 hidden sm:inline">{user.email}</span>
+                <div className="flex items-center gap-2">
+                  {user.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={user.displayName || ''} 
+                      className="w-6 h-6 rounded-full border border-slate-200 dark:border-slate-700"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                      <User className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                  )}
+                  <span className="text-[10px] font-bold text-slate-400 hidden sm:inline">{user.email}</span>
+                </div>
                 <button onClick={() => signOut(auth)} className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">{t.logoutLabel}</button>
               </div>
             ) : (
@@ -4609,6 +5000,35 @@ export default function App() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Birthday Modal */}
+        <AnimatePresence>
+          {showBirthdayModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white dark:bg-slate-900 rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 dark:border-slate-800 relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500" />
+                <div className="mb-6 inline-flex p-4 bg-pink-100 dark:bg-pink-900/30 rounded-full">
+                  <Sparkles className="w-10 h-10 text-pink-600 dark:text-pink-400" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">{t.happyBirthday}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-8 leading-relaxed">
+                  {t.birthdayMessage}
+                </p>
+                <button 
+                  onClick={() => setShowBirthdayModal(false)}
+                  className="w-full py-4 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-lg hover:bg-slate-800 dark:hover:bg-slate-700 transition-all"
+                >
+                  Obrigado!
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {view === 'DASHBOARD' && (
             <motion.div 
@@ -5313,13 +5733,13 @@ export default function App() {
                   <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
                     <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">{t.expenses}</p>
                     <p className="text-xl font-black text-slate-900 dark:text-slate-100">
-                      {formatCurrency(expenses.reduce((acc, curr) => acc + curr.valor, 0))}
+                      {formatCurrency(expenses.reduce((acc, curr) => acc + curr.valor, 0), language)}
                     </p>
                   </div>
                   <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30">
                     <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1">{t.debts}</p>
                     <p className="text-xl font-black text-slate-900 dark:text-slate-100">
-                      {formatCurrency(debts.reduce((acc, curr) => acc + curr.valor, 0))}
+                      {formatCurrency(debts.reduce((acc, curr) => acc + curr.valorTotal, 0), language)}
                     </p>
                   </div>
                 </div>
@@ -6053,7 +6473,99 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Income Registration (Free) */}
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <ArrowUpCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> {editingIncome ? t.edit : t.addIncome}
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.description}</label>
+                      <input 
+                        type="text" 
+                        value={editingIncome ? editingIncome.descricao : newIncome.descricao}
+                        onChange={(e) => editingIncome ? setEditingIncome({...editingIncome, descricao: e.target.value}) : setNewIncome({...newIncome, descricao: e.target.value})}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
+                        placeholder="Ex: Salário, Freelance"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.value}</label>
+                        <input 
+                          type="number" 
+                          value={editingIncome ? editingIncome.valor : newIncome.valor}
+                          onChange={(e) => editingIncome ? setEditingIncome({...editingIncome, valor: parseFloat(e.target.value) || 0}) : setNewIncome({...newIncome, valor: parseFloat(e.target.value) || 0})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.category}</label>
+                        <select 
+                          value={editingIncome ? editingIncome.categoria : newIncome.categoria}
+                          onChange={(e) => editingIncome ? setEditingIncome({...editingIncome, categoria: e.target.value as any}) : setNewIncome({...newIncome, categoria: e.target.value as any})}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-emerald-500 transition-all dark:text-slate-100"
+                        >
+                          <option value="Fixa">{t.fixed}</option>
+                          <option value="Variável">{t.variable}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => {
+                          if (editingIncome) {
+                            updateIncome(editingIncome.id, editingIncome);
+                          } else {
+                            addIncome(newIncome);
+                            setNewIncome({ descricao: '', valor: 0, categoria: 'Variável', data: new Date().toISOString().split('T')[0] });
+                          }
+                        }}
+                        className="flex-1 py-3 bg-emerald-600 dark:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all"
+                      >
+                        {editingIncome ? t.update : t.save}
+                      </button>
+                      {editingIncome && (
+                        <button 
+                          onClick={() => setEditingIncome(null)}
+                          className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                        >
+                          {t.cancel}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentIncomes}</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                      {incomes.map(inc => (
+                        <div key={inc.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{inc.descricao}</p>
+                            <p className="text-[8px] text-slate-400 uppercase font-black">{inc.categoria}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{formatCurrency(inc.valor, language)}</p>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => setEditingIncome(inc)} className="p-1 text-slate-400 hover:text-indigo-500 transition-colors">
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => deleteIncome(inc.id)} className="p-1 text-slate-400 hover:text-rose-500 transition-colors">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {incomes.length === 0 && (
+                        <p className="text-[10px] text-slate-400 italic">{t.noIncomes}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Expense Registration (Free) */}
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -6099,7 +6611,13 @@ export default function App() {
                             updateExpense(editingExpense.id, editingExpense);
                           } else {
                             addExpense(newExpense);
-                            setNewExpense({ descricao: '', valor: 0, categoria: 'Variável' });
+                            setNewExpense({ 
+                              descricao: '', 
+                              valor: 0, 
+                              categoria: 'Variável',
+                              data: new Date().toISOString().split('T')[0],
+                              tipo: 'variavel'
+                            });
                           }
                         }}
                         className="flex-1 py-3 bg-emerald-600 dark:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all"
@@ -6127,7 +6645,7 @@ export default function App() {
                             <p className="text-[8px] text-slate-400 uppercase font-black">{exp.categoria}</p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{formatCurrency(exp.valor)}</p>
+                            <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{formatCurrency(exp.valor, language)}</p>
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button onClick={() => setEditingExpense(exp)} className="p-1 text-slate-400 hover:text-indigo-500 transition-colors">
                                 <Edit2 className="w-3 h-3" />
@@ -6165,8 +6683,8 @@ export default function App() {
                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.value}</label>
                           <input 
                             type="number" 
-                            value={editingDebt ? editingDebt.valor : newDebt.valor}
-                            onChange={(e) => editingDebt ? setEditingDebt({...editingDebt, valor: parseFloat(e.target.value) || 0}) : setNewDebt({...newDebt, valor: parseFloat(e.target.value) || 0})}
+                            value={editingDebt ? editingDebt.valorTotal : newDebt.valorTotal}
+                            onChange={(e) => editingDebt ? setEditingDebt({...editingDebt, valorTotal: parseFloat(e.target.value) || 0}) : setNewDebt({...newDebt, valorTotal: parseFloat(e.target.value) || 0})}
                             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-rose-500 transition-all dark:text-slate-100"
                           />
                         </div>
@@ -6187,7 +6705,7 @@ export default function App() {
                               updateDebt(editingDebt.id, editingDebt);
                             } else {
                               addDebt(newDebt);
-                              setNewDebt({ credor: '', valor: 0, taxaJuros: 0 });
+                              setNewDebt({ credor: '', valorTotal: 0, taxaJuros: 0, vencimento: new Date().toISOString().split('T')[0] });
                             }
                           }}
                           className="flex-1 py-3 bg-rose-600 dark:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-600 transition-all"
@@ -6215,7 +6733,7 @@ export default function App() {
                               <p className="text-[8px] text-slate-400 uppercase font-black">{debt.taxaJuros}% a.m.</p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <p className="text-xs font-black text-rose-600 dark:text-rose-400 whitespace-nowrap">{formatCurrency(debt.valor)}</p>
+                              <p className="text-xs font-black text-rose-600 dark:text-rose-400 whitespace-nowrap">{formatCurrency(debt.valorTotal, language)}</p>
                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => setEditingDebt(debt)} className="p-1 text-slate-400 hover:text-indigo-500 transition-colors">
                                   <Edit2 className="w-3 h-3" />
@@ -6231,6 +6749,59 @@ export default function App() {
                     </div>
                   </ProGuard>
                 </div>
+
+                {/* Smart Product Search (PRO) */}
+                <ProGuard>
+                  <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <ShoppingBag className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t.smartSearch}
+                      </h3>
+                      <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[8px] font-black rounded uppercase tracking-widest">PRO</span>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && searchProduct()}
+                        placeholder={t.searchPlaceholder}
+                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500 transition-all dark:text-slate-100"
+                      />
+                      <button 
+                        onClick={searchProduct}
+                        disabled={isSearchingProduct || !searchQuery.trim()}
+                        className="px-6 py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {isSearchingProduct ? <Clock className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                      </button>
+                    </div>
+
+                    {isSearchingProduct && (
+                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+                        <p className="text-xs font-bold text-slate-500 animate-pulse">{t.searching}</p>
+                      </div>
+                    )}
+
+                    {productSearchResult && !isSearchingProduct && (
+                      <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-4">
+                        <div className="prose prose-slate prose-xs dark:prose-invert max-w-none">
+                          <Markdown>{productSearchResult}</Markdown>
+                        </div>
+                        <div className="flex justify-end">
+                          <button 
+                            onClick={() => setProductSearchResult(null)}
+                            className="text-[10px] font-black text-slate-400 uppercase hover:text-slate-600 transition-colors"
+                          >
+                            Limpar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ProGuard>
               </div>
 
               {/* Expense Consolidation (PRO) */}
@@ -6249,7 +6820,8 @@ export default function App() {
                           <Pie
                             data={[
                               { name: t.fixed, value: expenses.filter(e => e.categoria === 'Fixa').reduce((acc, curr) => acc + curr.valor, 0) },
-                              { name: t.variable, value: expenses.filter(e => e.categoria === 'Variável').reduce((acc, curr) => acc + curr.valor, 0) }
+                              { name: t.variable, value: expenses.filter(e => e.categoria === 'Variável').reduce((acc, curr) => acc + curr.valor, 0) },
+                              { name: t.addIncome, value: incomes.reduce((acc, curr) => acc + curr.valor, 0) }
                             ]}
                             cx="50%"
                             cy="50%"
@@ -6260,19 +6832,26 @@ export default function App() {
                           >
                             <Cell fill="#10b981" />
                             <Cell fill="#f59e0b" />
+                            <Cell fill="#6366f1" />
                           </Pie>
                           <Tooltip />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="space-y-4 flex flex-col justify-center">
+                      <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{t.addIncome}</span>
+                        <span className="text-lg font-black text-emerald-900 dark:text-emerald-100">
+                          {formatCurrency(incomes.reduce((acc, curr) => acc + curr.valor, 0), language)}
+                        </span>
+                      </div>
                       <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 rounded-full bg-emerald-500" />
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t.fixed}</span>
                         </div>
                         <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                          {formatCurrency(expenses.filter(e => e.categoria === 'Fixa').reduce((acc, curr) => acc + curr.valor, 0))}
+                          {formatCurrency(expenses.filter(e => e.categoria === 'Fixa').reduce((acc, curr) => acc + curr.valor, 0), language)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
@@ -6281,13 +6860,13 @@ export default function App() {
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t.variable}</span>
                         </div>
                         <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                          {formatCurrency(expenses.filter(e => e.categoria === 'Variável').reduce((acc, curr) => acc + curr.valor, 0))}
+                          {formatCurrency(expenses.filter(e => e.categoria === 'Variável').reduce((acc, curr) => acc + curr.valor, 0), language)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
                         <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{t.total}</span>
                         <span className="text-lg font-black text-indigo-900 dark:text-indigo-100">
-                          {formatCurrency(expenses.reduce((acc, curr) => acc + curr.valor, 0))}
+                          {formatCurrency(incomes.reduce((acc, curr) => acc + curr.valor, 0) - expenses.reduce((acc, curr) => acc + curr.valor, 0), language)}
                         </span>
                       </div>
                     </div>
@@ -6488,6 +7067,43 @@ export default function App() {
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500 transition-all dark:text-slate-100"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.birthDay}</label>
+                      <select 
+                        value={personalData.birthDay}
+                        onChange={(e) => setPersonalData({...personalData, birthDay: e.target.value})}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500 transition-all dark:text-slate-100"
+                      >
+                        <option value="">-</option>
+                        {Array.from({length: 31}, (_, i) => i + 1).map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.birthMonth}</label>
+                      <select 
+                        value={personalData.birthMonth}
+                        onChange={(e) => setPersonalData({...personalData, birthMonth: e.target.value})}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500 transition-all dark:text-slate-100"
+                      >
+                        <option value="">-</option>
+                        <option value="1">{t.january}</option>
+                        <option value="2">{t.february}</option>
+                        <option value="3">{t.march}</option>
+                        <option value="4">{t.april}</option>
+                        <option value="5">{t.may}</option>
+                        <option value="6">{t.june}</option>
+                        <option value="7">{t.july}</option>
+                        <option value="8">{t.august}</option>
+                        <option value="9">{t.september}</option>
+                        <option value="10">{t.october}</option>
+                        <option value="11">{t.november}</option>
+                        <option value="12">{t.december}</option>
+                      </select>
+                    </div>
+                  </div>
                   <button 
                     onClick={saveSettings}
                     className="w-full py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all"
@@ -6551,7 +7167,7 @@ export default function App() {
               <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] shadow-sm border border-slate-100 dark:border-slate-800">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.revenue}</p>
                 <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(transactions.reduce((acc, curr) => acc + curr.valor, 0))}
+                  {formatCurrency(transactions.reduce((acc, curr) => acc + curr.valor, 0), language)}
                 </h3>
               </div>
               <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] shadow-sm border border-slate-100 dark:border-slate-800">
@@ -6637,7 +7253,7 @@ export default function App() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.monthlyValue}</label>
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-black text-slate-400">{formatCurrency(0).replace(/[\d.,\s\u00A0]/g, '')}</span>
+                    <span className="text-lg font-black text-slate-400">{formatCurrency(0, language).replace(/[\d.,\s\u00A0]/g, '')}</span>
                     <input 
                       type="number" 
                       value={planConfig.monthly}
@@ -6649,7 +7265,7 @@ export default function App() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.yearlyValue}</label>
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-black text-slate-400">{formatCurrency(0).replace(/[\d.,\s\u00A0]/g, '')}</span>
+                    <span className="text-lg font-black text-slate-400">{formatCurrency(0, language).replace(/[\d.,\s\u00A0]/g, '')}</span>
                     <input 
                       type="number" 
                       value={planConfig.yearly}
@@ -6998,7 +7614,7 @@ export default function App() {
                     }`}
                   >
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t.monthly}</p>
-                    <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(planConfig.monthly)}</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(planConfig.monthly, language)}</p>
                   </button>
                   <button 
                     onClick={() => setSelectedPeriod('yearly')}
@@ -7012,7 +7628,7 @@ export default function App() {
                       {t.saveYearly}
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t.yearly}</p>
-                    <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(planConfig.yearly)}</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-slate-100">{formatCurrency(planConfig.yearly, language)}</p>
                   </button>
                 </div>
 
