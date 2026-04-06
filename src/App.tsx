@@ -25,7 +25,7 @@ import {
 import { 
   collection, addDoc, onSnapshot, query, orderBy, where,
   limit, updateDoc, doc, setDoc, getDoc, Timestamp,
-  serverTimestamp, deleteDoc
+  serverTimestamp, deleteDoc, getDocs, writeBatch
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -457,6 +457,7 @@ const translations = {
     addIncome: "Adicionar Receita",
     recentIncomes: "Receitas Recentes",
     noIncomes: "Nenhuma receita registrada.",
+    birthday: "Aniversário",
     smartSearch: "Busca Inteligente de Preços",
     searchPlaceholder: "O que você deseja comprar?",
     searching: "Pesquisando...",
@@ -858,6 +859,7 @@ const translations = {
     addIncome: "Add Income",
     recentIncomes: "Recent Incomes",
     noIncomes: "No income registered.",
+    birthday: "Birthday",
     smartSearch: "Smart Price Search",
     searchPlaceholder: "What do you want to buy?",
     searching: "Searching...",
@@ -1068,18 +1070,6 @@ const translations = {
     quotaExceeded: "Cuota de API excedida. Inténtelo de nuevo en unos momentos.",
     refresh: "Actualizar",
     sentinelActive: "SENTINELA ACTIVO",
-    welcomeTitle: "Bienvenido a O GUARDIAO",
-    welcomeSubtitle: "Impulsada por la inteligencia avanzada de Gemini, esta súper aplicación combina tecnología de vanguardia con seguridad de clase mundial. Al operar sobre la robusta infraestructura y los servidores ultra seguros de Google, garantizamos que cada línea de código y cada dato suyo reciba la máxima protección y eficiencia que la tecnología moderna puede ofrecer.",
-    welcomeStep1Title: "🛡️ Protección contra Estafas",
-    welcomeStep1Desc: "Pegue mensajes sospechosos en el módulo 'Escudo' para un análisis instantáneo por IA.",
-    welcomeStep2Title: "🚨 Botón de Pánico",
-    welcomeStep2Desc: "En emergencias, la aplicación graba audio, analiza la situación y alerta a los contactos de confianza.",
-    welcomeStep3Title: "🗺️ Ruta Segura",
-    welcomeStep3Desc: "Planifique rutas evitando áreas de riesgo basadas en datos en tiempo real.",
-    welcomeStep4Title: "🏥 Salud y Comunidad",
-    welcomeStep4Desc: "Encuentre farmacias, hospitales y servicios locales rápidamente.",
-    getStarted: "Empezar Ahora",
-    tutorial: "Tutorial",
     edit: "Editar",
     delete: "Eliminar",
     cancel: "Cancelar",
@@ -1109,6 +1099,7 @@ const translations = {
     addIncome: "Añadir Ingreso",
     recentIncomes: "Ingresos Recientes",
     noIncomes: "Ningún ingreso registrado.",
+    birthday: "Cumpleaños",
     smartSearch: "Búsqueda Inteligente de Precios",
     searchPlaceholder: "¿Qué desea comprar?",
     searching: "Buscando...",
@@ -1463,18 +1454,7 @@ const translations = {
     dark: "Sombre",
     save: "Enregistrer",
     selectLanguage: "Sélectionner la langue",
-    welcomeTitle: "Bienvenue sur O GUARDIAO",
-    welcomeSubtitle: "Propulsée par l'intelligence avancée de Gemini, cette super application combine une technologie de pointe avec une sécurité de classe mondiale. Fonctionnant sur l'infrastructure robuste et les serveurs ultra-sécurisés de Google, nous garantissons que chaque ligne de code et chaque donnée reçoit la protection et l'efficacité maximales que la technologie moderne peut offrir.",
-    welcomeStep1Title: "🛡️ Protection contre les Arnaques",
-    welcomeStep1Desc: "Collez les messages suspects dans le module 'Bouclier' pour une analyse instantanée par l'IA.",
-    welcomeStep2Title: "🚨 Bouton Panique",
-    welcomeStep2Desc: "En cas d'urgence, l'application enregistre l'audio, analyse la situation et alerte les contacts de confiance.",
-    welcomeStep3Title: "🗺️ Route Sûre",
-    welcomeStep3Desc: "Planifiez des itinéraires en évitant les zones à risque grâce aux données en temps réel.",
-    welcomeStep4Title: "🏥 Santé et Communauté",
-    welcomeStep4Desc: "Trouvez rapidement des pharmacies, des hôpitaux et des services locaux.",
-    getStarted: "Commencer Maintenant",
-    tutorial: "Tutoriel",
+    quotaExceeded: "Quota d'API dépassé. Veuillez réessayer dans quelques instants.",
     edit: "Modifier",
     delete: "Supprimer",
     cancel: "Annuler",
@@ -1664,6 +1644,7 @@ const translations = {
     addIncome: "Ajouter un revenu",
     recentIncomes: "Revenus récents",
     noIncomes: "Aucun revenu enregistré.",
+    birthday: "Anniversaire",
     smartSearch: "Recherche de prix intelligente",
     searchPlaceholder: "Que voulez-vous acheter ?",
     searching: "Recherche en cours...",
@@ -1869,18 +1850,6 @@ const translations = {
     dark: "Dunkel",
     save: "Speichern",
     selectLanguage: "Sprache auswählen",
-    welcomeTitle: "Willkommen bei O GUARDIAO",
-    welcomeSubtitle: "Angetrieben durch die fortschrittliche Intelligenz von Gemini, kombiniert diese Super-App Spitzentechnologie mit erstklassiger Sicherheit. Durch den Betrieb auf der robusten Infrastruktur und den extrem sicheren Servern von Google stellen wir sicher, dass jede Codezeile und jedes Ihrer Daten den maximalen Schutz und die Effizienz erhält, die moderne Technologie bieten kann.",
-    welcomeStep1Title: "🛡️ Schutz vor Betrug",
-    welcomeStep1Desc: "Fügen Sie verdächtige Nachrichten in das Modul 'Schild' ein, um eine sofortige KI-Analyse zu erhalten.",
-    welcomeStep2Title: "🚨 Panik-Button",
-    welcomeStep2Desc: "In Notfällen nimmt die App Audio auf, analysiert die Situation und alarmiert vertrauenswürdige Kontakte.",
-    welcomeStep3Title: "🗺️ Sichere Route",
-    welcomeStep3Desc: "Planen Sie Wege und vermeiden Sie Risikogebiete basierend auf Echtzeitdaten.",
-    welcomeStep4Title: "🏥 Gesundheit & Gemeinschaft",
-    welcomeStep4Desc: "Finden Sie schnell Apotheken, Krankenhäuser und lokale Dienste.",
-    getStarted: "Jetzt Loslegen",
-    tutorial: "Tutorial",
     edit: "Bearbeiten",
     delete: "Löschen",
     cancel: "Abbrechen",
@@ -2070,6 +2039,8 @@ const translations = {
     addIncome: "Einkommen hinzufügen",
     recentIncomes: "Aktuelle Einkommen",
     noIncomes: "Kein Einkommen registriert.",
+    quotaExceeded: "API-Kontingent überschritten. Bitte versuchen Sie es in wenigen Augenblicken erneut.",
+    birthday: "Geburtstag",
     smartSearch: "Intelligente Preissuche",
     searchPlaceholder: "Was möchten Sie kaufen?",
     searching: "Suche...",
@@ -2275,20 +2246,9 @@ const translations = {
     dark: "Scuro",
     save: "Salva",
     selectLanguage: "Seleziona lingua",
+    quotaExceeded: "Quota API superata. Riprova tra qualche istante.",
     welcome: "Benvenuto in O GUARDIAO",
     sentinelActive: "SENTINELLA ATTIVA",
-    welcomeTitle: "Benvenuto su O GUARDIAO",
-    welcomeSubtitle: "Alimentata dall'intelligenza avanzata di Gemini, questa super app combina tecnologia all'avanguardia con sicurezza di classe mondiale. Operando sulla robusta infrastruttura e sui server ultra-sicuri di Google, garantiamo che ogni riga di codice e ogni tuo dato riceva la massima protezione ed efficienza che la tecnologia moderna può offrire.",
-    welcomeStep1Title: "🛡️ Protezione contro le Truffe",
-    welcomeStep1Desc: "Incolla i messaggi sospetti nel modulo 'Scudo' per un'analisi istantanea dell'IA.",
-    welcomeStep2Title: "🚨 Pulsante Panico",
-    welcomeStep2Desc: "In caso di emergenza, l'app registra l'audio, analizza la situazione e avvisa i contatti fidati.",
-    welcomeStep3Title: "🗺️ Percorso Sicuro",
-    welcomeStep3Desc: "Pianifica percorsi evitando aree a rischio basandoti su dati in tempo reale.",
-    welcomeStep4Title: "🏥 Salute e Comunità",
-    welcomeStep4Desc: "Trova rapidamente farmacie, ospedali e servizi locali.",
-    getStarted: "Inizia Ora",
-    tutorial: "Tutorial",
     edit: "Modifica",
     delete: "Elimina",
     cancel: "Annulla",
@@ -2478,6 +2438,7 @@ const translations = {
     addIncome: "Aggiungi entrate",
     recentIncomes: "Entrate recenti",
     noIncomes: "Nessuna entrata registrata.",
+    birthday: "Compleanno",
     smartSearch: "Ricerca prezzi intelligente",
     searchPlaceholder: "Cosa vuoi comprare?",
     searching: "Ricerca in corso...",
@@ -2683,18 +2644,7 @@ const translations = {
     dark: "Donker",
     save: "Opslaan",
     selectLanguage: "Selecteer taal",
-    welcomeTitle: "Welkom bij O GUARDIAO",
-    welcomeSubtitle: "Aangedreven door de geavanceerde intelligentie van Gemini, combineert deze super-app geavanceerde technologie met beveiliging van wereldklasse. Door te draaien op de robuuste infrastructuur en ultra-beveiligde servers van Google, garanderen we dat elke regel code en elk gegeven van u de maximale bescherming en efficiëntie krijgt die moderne technologie kan bieden.",
-    welcomeStep1Title: "🛡️ Bescherming tegen Fraude",
-    welcomeStep1Desc: "Plak verdachte berichten in de 'Schild'-module voor onmiddellijke AI-analyse.",
-    welcomeStep2Title: "🚨 Paniekknop",
-    welcomeStep2Desc: "In noodgevallen neemt de app audio op, analyseert de situatie en waarschuwt vertrouwde contacten.",
-    welcomeStep3Title: "🗺️ Veilige Route",
-    welcomeStep3Desc: "Plan routes en vermijd risicogebieden op basis van real-time gegevens.",
-    welcomeStep4Title: "🏥 Gezondheid & Gemeenschap",
-    welcomeStep4Desc: "Vind snel apotheken, ziekenhuizen en lokale diensten.",
-    getStarted: "Nu Beginnen",
-    tutorial: "Tutorial",
+    quotaExceeded: "API-quotum overschreden. Probeer het over enkele ogenblikken opnieuw.",
     edit: "Bewerken",
     delete: "Verwijderen",
     cancel: "Annuleren",
@@ -2884,6 +2834,7 @@ const translations = {
     addIncome: "Inkomsten toevoegen",
     recentIncomes: "Recente inkomsten",
     noIncomes: "Geen inkomsten geregistreerd.",
+    birthday: "Verjaardag",
     smartSearch: "Slimme prijszoekopdracht",
     searchPlaceholder: "Wat wilt u kopen?",
     searching: "Zoeken...",
@@ -3089,18 +3040,6 @@ const translations = {
     dark: "深色",
     save: "保存",
     selectLanguage: "选择语言",
-    welcomeTitle: "欢迎来到 O GUARDIAO",
-    welcomeSubtitle: "由 Gemini 的先进智能驱动，这款超级应用将尖端技术与世界级安全性相结合。运行在 Google 强大的基础设施和超安全服务器上，我们确保每一行代码和您的每一条数据都能获得现代技术所能提供的最大保护和效率。",
-    welcomeStep1Title: "🛡️ 诈骗保护",
-    welcomeStep1Desc: "将可疑消息粘贴到“护盾”模块中，进行即时 AI 分析。",
-    welcomeStep2Title: "🚨 紧急按钮",
-    welcomeStep2Desc: "在紧急情况下，应用会录制音频、分析情况并警报信任的联系人。",
-    welcomeStep3Title: "🗺️ 安全路线",
-    welcomeStep3Desc: "根据实时数据规划路径，避开风险区域。",
-    welcomeStep4Title: "🏥 健康与社区",
-    welcomeStep4Desc: "快速查找药店、医院和当地服务。",
-    getStarted: "现在开始",
-    tutorial: "教程",
     edit: "编辑",
     delete: "删除",
     cancel: "取消",
@@ -3290,6 +3229,8 @@ const translations = {
     addIncome: "添加收入",
     recentIncomes: "最近收入",
     noIncomes: "没有登记的收入。",
+    quotaExceeded: "API 配额已超出。请稍后再试。",
+    birthday: "生日",
     smartSearch: "智能价格搜索",
     searchPlaceholder: "你想买什么？",
     searching: "搜索中...",
@@ -3495,18 +3436,6 @@ const translations = {
     dark: "כהה",
     save: "שמור",
     selectLanguage: "בחר שפה",
-    welcomeTitle: "ברוכים הבאים ל-O GUARDIAO",
-    welcomeSubtitle: "מופעל על ידי האינטליגנציה המתקדמת של Gemini, סופר-אפליקציה זו משלבת טכנולוגיה מתקדמת עם אבטחה ברמה עולמית. פועלת על התשתית החזקה והשרתים המאובטחים במיוחד של גוגל, אנו מבטיחים שכל שורת קוד וכל פיסת נתונים שלך יקבלו את ההגנה והיעילות המקסימלית שהטכנולוגיה המודרנית יכולה להציע.",
-    welcomeStep1Title: "🛡️ הגנה מפני הונאות",
-    welcomeStep1Desc: "הדבק הודעות חשודות במודול 'מגן' לניתוח AI מיידי.",
-    welcomeStep2Title: "🚨 לחצן מצוקה",
-    welcomeStep2Desc: "במצבי חירום, האפליקציה מקליטה שמע, מנתחת את המצב ומתריעה לאנשי קשר מהימנים.",
-    welcomeStep3Title: "🗺️ מסלול בטוח",
-    welcomeStep3Desc: "תכנן מסלולים תוך הימנעות מאזורי סיכון בהתבסס על נתונים בזמן אמת.",
-    welcomeStep4Title: "🏥 בריאות וקהילה",
-    welcomeStep4Desc: "מצא בתי מרקחת, בתי חולים ושירותים מקומיים במהירות.",
-    getStarted: "התחל עכשיו",
-    tutorial: "מדריך",
     edit: "ערוך",
     delete: "מחק",
     cancel: "ביטול",
@@ -3696,6 +3625,8 @@ const translations = {
     addIncome: "הוסף הכנסה",
     recentIncomes: "הכנסות אחרונות",
     noIncomes: "לא נרשמו הכנסות.",
+    quotaExceeded: "מכסת ה-API חרגה. אנא נסה שוב בעוד מספר רגעים.",
+    birthday: "יום הולדת",
     smartSearch: "חיפוש מחירים חכם",
     searchPlaceholder: "מה ברצונך לקנות?",
     searching: "מחפש...",
@@ -3903,6 +3834,44 @@ interface FirestoreErrorInfo {
   authInfo: any;
 }
 
+interface ProGuardProps {
+  children: React.ReactNode;
+  isPro: boolean;
+  t: any;
+  setShowCheckout: (v: boolean) => void;
+}
+
+const ProGuard = ({ children, isPro, t, setShowCheckout }: ProGuardProps) => {
+  if (isPro) return <>{children}</>;
+  
+  return (
+    <div className="relative group/proguard">
+      <div className="blur-sm pointer-events-none select-none opacity-50">
+        {children}
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center bg-white/10 dark:bg-slate-900/10 backdrop-blur-[2px] rounded-3xl transition-all group-hover/proguard:backdrop-blur-[4px]">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-[32px] shadow-2xl border border-slate-100 dark:border-slate-800 text-center space-y-4 max-w-[280px] transform transition-all group-hover/proguard:scale-105">
+          <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto">
+            <Zap className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">{t.proFeatureTitle}</h4>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold leading-relaxed mt-1">
+              {t.proFeatureDescription}
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowCheckout(true)}
+            className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-200 dark:shadow-none"
+          >
+            {t.upgradeNow}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [view, setView] = useState<'DASHBOARD' | 'SCAM' | 'EMERGENCY' | 'PAINEL' | 'SETTINGS' | 'FINANCEIRO' | 'SAUDE'>('DASHBOARD');
   const [language, setLanguage] = useState<Language>('pt');
@@ -3960,7 +3929,7 @@ export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [usageLogs, setUsageLogs] = useState<UsageLog[]>([]);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const isAdmin = (user?.email === 'gersonproenca@gmail.com' && user?.emailVerified) || userProfile?.isAdmin === true;
+  const isAdmin = user?.email === 'gersonproenca@gmail.com' || userProfile?.isAdmin === true;
   const [showCheckout, setShowCheckout] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [isProcessingPurchase, setIsProcessingPurchase] = useState(false);
@@ -4845,7 +4814,7 @@ export default function App() {
 
   const searchProduct = async () => {
     if (!searchQuery.trim()) return;
-    if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true) {
+    if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true && !isAdmin) {
       setShowCheckout(true);
       return;
     }
@@ -5232,8 +5201,8 @@ Sempre use um tom prestativo e direto.`,
     const nextBilling = Date.now() + (days * 24 * 60 * 60 * 1000);
     
     const subData = {
-      plan: 'pro',
-      subscriptionStatus: 'active',
+      plan: 'pro' as 'free' | 'pro',
+      subscriptionStatus: 'active' as 'active' | 'inactive' | 'past_due',
       subscriptionPeriod: selectedPeriod,
       nextBillingDate: nextBilling,
       paymentMethod: paymentMethod === 'card' ? 'Cartão de Crédito (Visa **** 4242)' : 'Pix (QR Code)'
@@ -5317,8 +5286,8 @@ Sempre use um tom prestativo e direto.`,
       onConfirm: async () => {
         const userRef = doc(db, 'users', user.uid);
         const cancelData = {
-          plan: 'free',
-          subscriptionStatus: 'inactive',
+          plan: 'free' as 'free' | 'pro',
+          subscriptionStatus: 'inactive' as 'active' | 'inactive' | 'past_due',
           nextBillingDate: null
         };
         await updateDoc(userRef, cancelData);
@@ -5330,32 +5299,43 @@ Sempre use um tom prestativo e direto.`,
     });
   };
 
-  const ProGuard = ({ children }: { children: React.ReactNode }) => {
-    const isPro = userProfile?.plan === 'pro' || userProfile?.isVip === true;
+  const resetDatabase = async () => {
+    if (!isAdmin) return;
     
-    if (isPro) return <>{children}</>;
-    
-    return (
-      <div className="relative group/pro">
-        <div className="filter blur-[2px] pointer-events-none select-none opacity-50">
-          {children}
-        </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/10 dark:bg-slate-900/10 backdrop-blur-[1px] rounded-3xl p-6 text-center z-20">
-          <div className="bg-amber-500 text-white p-2 rounded-full mb-3 shadow-lg">
-            <Star className="w-5 h-5 fill-current" />
-          </div>
-          <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-1">{t.proFeatureTitle}</h4>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4 max-w-[200px]">{t.proFeatureDescription}</p>
-          <button 
-            onClick={() => setShowCheckout(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-md"
-          >
-            {t.upgradeNow}
-          </button>
-        </div>
-      </div>
-    );
+    setConfirmDialog({
+      title: "Zerar Banco de Dados",
+      message: "Tem certeza que deseja apagar TODOS os dados de todas as coleções? Esta ação é irreversível.",
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        showToast("Iniciando limpeza...", "info");
+        
+        const collectionsToClear = [
+          'users', 'alertas', 'neighborAlerts', 'medications', 
+          'expenses', 'debts', 'financialProjects', 'logs_uso', 
+          'transacoes', 'carLocations', 'incomes'
+        ];
+        
+        try {
+          for (const collName of collectionsToClear) {
+            const querySnapshot = await getDocs(collection(db, collName));
+            const batch = writeBatch(db);
+            querySnapshot.forEach((doc) => {
+              batch.delete(doc.ref);
+            });
+            await batch.commit();
+          }
+          showToast("Banco de dados zerado com sucesso!", "success");
+          // Force logout to restart registration
+          signOut(auth);
+        } catch (err) {
+          console.error("Error resetting database:", err);
+          showToast("Erro ao zerar banco de dados.", "error");
+        }
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
   };
+
 
   useEffect(() => {
     if (!user) return;
@@ -5495,7 +5475,13 @@ Sempre use um tom prestativo e direto.`,
   const handleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      // Use redirect for iOS/Apple devices to avoid popup blocking issues
+      if (os === 'ios') {
+        const { signInWithRedirect } = await import('firebase/auth');
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
     } catch (error) { console.error(error); }
   };
 
@@ -6232,7 +6218,7 @@ Sempre use um tom prestativo e direto.`,
                   </div>
                 </div>
                 
-                  <ProGuard>
+                  <ProGuard isPro={userProfile?.plan === 'pro' || userProfile?.isVip === true || isAdmin} t={t} setShowCheckout={setShowCheckout}>
                     <button 
                       onClick={toggleWalking}
                       className={`w-full py-5 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all transform active:scale-95 ${
@@ -6322,7 +6308,7 @@ Sempre use um tom prestativo e direto.`,
                           </div>
                         </div>
                       )) : (
-                  <ProGuard>
+                  <ProGuard isPro={userProfile?.plan === 'pro' || userProfile?.isVip === true || isAdmin} t={t} setShowCheckout={setShowCheckout}>
                     <div className="p-5 border border-slate-100 dark:border-slate-800 rounded-3xl bg-slate-50/50 dark:bg-slate-800/30">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full text-slate-600 dark:text-slate-300 uppercase tracking-wider">{t.specialist}</span>
@@ -7095,7 +7081,7 @@ Sempre use um tom prestativo e direto.`,
                 </div>
               </div>
 
-                <ProGuard>
+                <ProGuard isPro={userProfile?.plan === 'pro' || userProfile?.isVip === true || isAdmin} t={t} setShowCheckout={setShowCheckout}>
                   <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
@@ -7536,7 +7522,7 @@ Sempre use um tom prestativo e direto.`,
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" /> {editingDebt ? t.edit : t.addDebt}
                   </h3>
-                  <ProGuard>
+                  <ProGuard isPro={userProfile?.plan === 'pro' || userProfile?.isVip === true || isAdmin} t={t} setShowCheckout={setShowCheckout}>
                     <div className="space-y-4">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.creditor}</label>
@@ -7621,7 +7607,7 @@ Sempre use um tom prestativo e direto.`,
                 </div>
 
                 {/* Smart Product Search (PRO) */}
-                <ProGuard>
+                <ProGuard isPro={userProfile?.plan === 'pro' || userProfile?.isVip === true || isAdmin} t={t} setShowCheckout={setShowCheckout}>
                   <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -7675,7 +7661,7 @@ Sempre use um tom prestativo e direto.`,
               </div>
 
               {/* Expense Consolidation (PRO) */}
-              <ProGuard>
+              <ProGuard isPro={userProfile?.plan === 'pro' || userProfile?.isVip === true || isAdmin} t={t} setShowCheckout={setShowCheckout}>
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-8">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -8156,6 +8142,26 @@ Sempre use um tom prestativo e direto.`,
               </button>
             </div>
 
+            <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl">
+                    <Trash2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">Resetar Sistema</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Limpeza total para novos testes</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={resetDatabase}
+                  className="px-6 py-3 bg-rose-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg shadow-rose-200 dark:shadow-none"
+                >
+                  Zerar Banco de Dados
+                </button>
+              </div>
+            </div>
+
             {/* User Management Section */}
               <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-4 mb-8">
@@ -8173,7 +8179,11 @@ Sempre use um tom prestativo e direto.`,
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800">
                         <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.userEmail}</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.name}</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.birthday}</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cadastro</th>
                         <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.userPlan}</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                         <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.userRole}</th>
                         <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
                       </tr>
@@ -8182,8 +8192,26 @@ Sempre use um tom prestativo e direto.`,
                       {allUsers.map((u) => (
                         <tr key={u.uid} className="group">
                           <td className="py-4">
-                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{u.email}</p>
-                            <p className="text-[8px] text-slate-400 font-mono">{u.uid}</p>
+                            <div className="flex items-center gap-3">
+                              {u.photoURL && <img src={u.photoURL} alt="" className="w-8 h-8 rounded-full border border-slate-200" referrerPolicy="no-referrer" />}
+                              <div>
+                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{u.email}</p>
+                                <p className="text-[8px] text-slate-400 font-mono">{u.uid}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4">
+                            <p className="text-xs font-bold text-slate-600 dark:text-slate-300">{u.name || '-'}</p>
+                          </td>
+                          <td className="py-4">
+                            <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                              {u.birthDay && u.birthMonth ? `${u.birthDay}/${u.birthMonth}` : '-'}
+                            </p>
+                          </td>
+                          <td className="py-4">
+                            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                              {u.timestamp ? new Date(u.timestamp).toLocaleDateString() : '-'}
+                            </p>
                           </td>
                           <td className="py-4">
                             <div className="flex items-center gap-2">
@@ -8194,6 +8222,11 @@ Sempre use um tom prestativo e direto.`,
                             </div>
                           </td>
                           <td className="py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase ${u.subscriptionStatus === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                              {u.subscriptionStatus || 'inactive'}
+                            </span>
+                          </td>
+                          <td className="py-4">
                             <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase ${u.isAdmin ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500'}`}>
                               {u.isAdmin ? 'Admin' : 'User'}
                             </span>
@@ -8201,7 +8234,7 @@ Sempre use um tom prestativo e direto.`,
                           <td className="py-4 text-right">
                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
-                                onClick={() => updateUserPlanManual(u.uid, u.plan === 'pro' ? 'free' : 'pro')}
+                                onClick={() => updateUserPlanManual(u.uid, (u.plan === 'pro' ? 'free' : 'pro') as 'free' | 'pro')}
                                 className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-slate-400 hover:text-amber-600 rounded-xl transition-all"
                                 title={u.plan === 'pro' ? t.setFree : t.setPro}
                               >
