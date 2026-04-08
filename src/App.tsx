@@ -646,6 +646,13 @@ const translations = {
     locationSentMsg: "Localização enviada. Contatos notificados: {contacts}",
     mother: "Mãe",
     father: "Pai",
+    leisureCulture: "Lazer e Cultura",
+    findLeisure: "Encontrar Lazer",
+    cinema: "Cinema",
+    mall: "Shopping",
+    accessModule: "Acessar Módulo",
+    remove: "Remover",
+    make: "Tornar",
   },
   en: {
     appName: "O GUARDIAO",
@@ -1048,6 +1055,13 @@ const translations = {
     locationSentMsg: "Location sent. Contacts notified: {contacts}",
     mother: "Mother",
     father: "Father",
+    leisureCulture: "Leisure and Culture",
+    findLeisure: "Find Leisure",
+    cinema: "Cinema",
+    mall: "Mall",
+    accessModule: "Access Module",
+    remove: "Remove",
+    make: "Make",
   },
   es: {
     appName: "O GUARDIAO",
@@ -1833,6 +1847,18 @@ const translations = {
     locationSentMsg: "Localisation envoyée. Contacts notifiés : {contacts}",
     mother: "Mère",
     father: "Père",
+    adminPanel: "Administration",
+    welcome: "Bienvenue sur O GUARDIAO",
+    refresh: "Actualiser",
+    accessModule: "Accéder au module",
+    remove: "Supprimer",
+    make: "Rendre",
+    leisureCulture: "Loisirs et Culture",
+    findLeisure: "Trouver des loisirs",
+    cinema: "Cinéma",
+    mall: "Centre commercial",
+    testAlarm: "Tester l'alarme",
+    medicationLogs: "Logs des médicaments",
   },
   de: {
     appName: "O GUARDIAO",
@@ -2229,6 +2255,18 @@ const translations = {
     locationSentMsg: "Standort gesendet. Kontakte benachrichtigt: {contacts}",
     mother: "Mutter",
     father: "Vater",
+    adminPanel: "Administration",
+    welcome: "Willkommen bei O GUARDIAO",
+    refresh: "Aktualisieren",
+    accessModule: "Modul aufrufen",
+    remove: "Entfernen",
+    make: "Machen",
+    leisureCulture: "Freizeit und Kultur",
+    findLeisure: "Freizeit finden",
+    cinema: "Kino",
+    mall: "Einkaufszentrum",
+    testAlarm: "Alarm testen",
+    medicationLogs: "Medikamenten-Logs",
   },
   it: {
     appName: "O GUARDIAO",
@@ -3023,6 +3061,18 @@ const translations = {
     locationSentMsg: "Locatie verzonden. Contacten op de hoogte gesteld: {contacts}",
     mother: "Moeder",
     father: "Vader",
+    adminPanel: "Administratie",
+    welcome: "Welkom bij O GUARDIAO",
+    refresh: "Vernieuwen",
+    accessModule: "Module openen",
+    remove: "Verwijderen",
+    make: "Maken",
+    leisureCulture: "Vrije tijd en Cultuur",
+    findLeisure: "Vrije tijd vinden",
+    cinema: "Bioscoop",
+    mall: "Winkelcentrum",
+    testAlarm: "Alarm testen",
+    medicationLogs: "Medicatie-logs",
   },
   zh: {
     appName: "O GUARDIAO",
@@ -3872,6 +3922,57 @@ const ProGuard = ({ children, isPro, t, setShowCheckout }: ProGuardProps) => {
   );
 };
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      let errorMessage = "Ocorreu um erro inesperado.";
+      try {
+        const parsed = JSON.parse(this.state.error.message);
+        if (parsed.error) {
+          errorMessage = `Erro no Banco de Dados: ${parsed.error}`;
+        }
+      } catch (e) {
+        errorMessage = this.state.error.message || errorMessage;
+      }
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full text-center space-y-6">
+            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">Ops! Algo deu errado</h2>
+            <p className="text-slate-600 dark:text-slate-400 font-medium">
+              {errorMessage}
+            </p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full py-4 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black shadow-lg hover:bg-slate-800 transition-all"
+            >
+              Recarregar Aplicativo
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const [view, setView] = useState<'DASHBOARD' | 'SCAM' | 'EMERGENCY' | 'PAINEL' | 'SETTINGS' | 'FINANCEIRO' | 'SAUDE'>('DASHBOARD');
   const [language, setLanguage] = useState<Language>('pt');
@@ -3904,23 +4005,23 @@ export default function App() {
     const errInfo: FirestoreErrorInfo = {
       error: error instanceof Error ? error.message : String(error),
       authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-        emailVerified: auth.currentUser?.emailVerified,
-        isAnonymous: auth.currentUser?.isAnonymous,
-        tenantId: auth.currentUser?.tenantId,
+        userId: auth.currentUser?.uid || 'unauthenticated',
+        email: auth.currentUser?.email || 'none',
+        emailVerified: auth.currentUser?.emailVerified || false,
+        isAnonymous: auth.currentUser?.isAnonymous || false,
+        tenantId: auth.currentUser?.tenantId || 'none',
         providerInfo: auth.currentUser?.providerData.map(provider => ({
           providerId: provider.providerId,
-          displayName: provider.displayName,
-          email: provider.email,
-          photoUrl: provider.photoURL
+          displayName: provider.displayName || '',
+          email: provider.email || '',
+          photoUrl: provider.photoURL || ''
         })) || []
       },
       operationType,
       path
     }
     console.error('Firestore Error: ', JSON.stringify(errInfo));
-    // throw new Error(JSON.stringify(errInfo)); // Don't throw to avoid crashing the whole app, but log it.
+    throw new Error(JSON.stringify(errInfo));
   };
 
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -5475,14 +5576,11 @@ Sempre use um tom prestativo e direto.`,
   const handleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      // Use redirect for iOS/Apple devices to avoid popup blocking issues
-      if (os === 'ios') {
-        const { signInWithRedirect } = await import('firebase/auth');
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-      }
-    } catch (error) { console.error(error); }
+      await signInWithPopup(auth, provider);
+    } catch (error) { 
+      console.error("Login error:", error); 
+      showToast("Erro ao fazer login. Tente novamente.", "error");
+    }
   };
 
   const handlePanicStart = () => {
@@ -5634,8 +5732,23 @@ Sempre use um tom prestativo e direto.`,
   };
 
 
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        const { getDocFromServer, doc } = await import('firebase/firestore');
+        await getDocFromServer(doc(db, 'test', 'connection'));
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration. ");
+        }
+      }
+    }
+    testConnection();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#F1F5F9] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-[#F1F5F9] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100">
       {/* Welcome Modal */}
       {showWelcome && (
         <div 
@@ -6403,7 +6516,7 @@ Sempre use um tom prestativo e direto.`,
                     <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{t.monitoringDevices}</h3>
                     <button 
                       onClick={() => setShowAddDevice(true)}
-                      title={t.addNewDevice || "Adicionar Novo Dispositivo"}
+                      title={t.addDevice || "Adicionar Novo Dispositivo"}
                       className="p-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
                     >
                       <Plus className="w-4 h-4" />
@@ -8732,5 +8845,6 @@ Sempre use um tom prestativo e direto.`,
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 }
