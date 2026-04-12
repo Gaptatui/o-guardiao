@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   collection, addDoc, onSnapshot, query, orderBy, where,
   limit, updateDoc, doc, getDoc, deleteDoc
@@ -207,16 +207,16 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
   }, [medications, lastAlarmTime, user]);
 
   // Functions
-  const playAlarmSound = () => {
+  const playAlarmSound = React.useCallback(() => {
     try {
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
       audio.play().catch(e => console.warn("Audio play blocked:", e));
     } catch (err) {
       console.error("Error playing alarm:", err);
     }
-  };
+  }, []);
 
-  const logMedicationAlarm = async (med: Medication) => {
+  const logMedicationAlarm = React.useCallback(async (med: Medication) => {
     if (!user) return;
     try {
       await addDoc(collection(db, 'logs_medicacao'), {
@@ -230,9 +230,9 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     } catch (err) {
       console.error("Error logging medication alarm:", err);
     }
-  };
+  }, [user]);
 
-  const addMedication = async () => {
+  const addMedication = React.useCallback(async () => {
     if (!user || !newMedication.nome || !newMedication.horario) {
       showToast("Preencha o nome e o horário!", "error");
       return;
@@ -248,9 +248,9 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, 'lembretes_medicacao');
     }
-  };
+  }, [user, newMedication, t.medicationAddedAlert, showToast, handleFirestoreError]);
 
-  const updateMedication = async () => {
+  const updateMedication = React.useCallback(async () => {
     if (!isEditingMedication) return;
     try {
       await updateDoc(doc(db, 'lembretes_medicacao', isEditingMedication), {
@@ -262,13 +262,13 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `lembretes_medicacao/${isEditingMedication}`);
     }
-  };
+  }, [isEditingMedication, newMedication, t.medicationUpdatedAlert, showToast, handleFirestoreError]);
 
-  const deleteMedication = async (id: string) => {
+  const deleteMedication = React.useCallback(async (id: string) => {
     setMedicationToDelete(id);
-  };
+  }, []);
 
-  const confirmDeleteMedication = async () => {
+  const confirmDeleteMedication = React.useCallback(async () => {
     if (!medicationToDelete) return;
     try {
       await deleteDoc(doc(db, 'lembretes_medicacao', medicationToDelete));
@@ -278,9 +278,9 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     } finally {
       setMedicationToDelete(null);
     }
-  };
+  }, [medicationToDelete, t.medicationDeletedAlert, showToast, handleFirestoreError]);
 
-  const fetchNearbyPharmacies = async () => {
+  const fetchNearbyPharmacies = React.useCallback(async () => {
     setIsFetchingPharmacies(true);
     setPharmacies([]);
     logModuleUsage('saude');
@@ -341,9 +341,9 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     } finally {
       setIsFetchingPharmacies(false);
     }
-  };
+  }, [t.pharmacyPrompt, genAI, showToast, logModuleUsage]);
 
-  const fetchNearbyUnits = async () => {
+  const fetchNearbyUnits = React.useCallback(async () => {
     setIsFetchingUnits(true);
     setHealthUnitsList([]);
     logModuleUsage('saude');
@@ -403,9 +403,9 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     } finally {
       setIsFetchingUnits(false);
     }
-  };
+  }, [genAI, showToast, logModuleUsage]);
 
-  const addDevice = () => {
+  const addDevice = React.useCallback(() => {
     if (!newDevice.name?.trim()) return;
     const device: Device = {
       id: Math.random().toString(36).substr(2, 9),
@@ -421,24 +421,28 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     setShowAddDevice(false);
     setNewDevice({ name: '', type: 'smartwatch', readingInterval: 3 });
     showToast(t.settingsSavedAlert, 'success');
-  };
+  }, [newDevice, t.settingsSavedAlert, showToast]);
 
-  const removeDevice = (id: string) => {
+  const removeDevice = React.useCallback((id: string) => {
     setDevices(prev => prev.filter(d => d.id !== id));
-  };
+  }, []);
 
-  const updateDeviceInterval = (id: string, interval: number) => {
+  const updateDeviceInterval = React.useCallback((id: string, interval: number) => {
     setDevices(prev => prev.map(d => d.id === id ? { ...d, readingInterval: interval } : d));
-  };
+  }, []);
 
-  const simulateFall = () => {
+  const simulateFall = React.useCallback(() => {
     if (!isWalking) return;
     showToast(t.fallDetectedAlert, 'error');
-  };
+  }, [isWalking, t.fallDetectedAlert, showToast]);
+
+  const lastDataRef = useRef<string>('');
+
+  // Sync Data with App.tsx
 
   // Sync Data with App.tsx
   useEffect(() => {
-    onDataChange({
+    const dataToSync = {
       medications,
       neighborAlerts,
       heartRate,
@@ -464,13 +468,28 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
       logMedicationAlarm,
       deleteMedication,
       medicationLogs
+    };
+
+    // Use a stringified version of the data to check for changes
+    // We exclude functions from the stringification
+    const dataString = JSON.stringify({
+      medications, neighborAlerts, heartRate, devices, healthTab,
+      isFetchingPharmacies, isFetchingUnits, pharmacies, healthUnitsList,
+      isEditingMedication, newMedication, medicationLogs
     });
+
+    if (dataString !== lastDataRef.current) {
+      lastDataRef.current = dataString;
+      onDataChange(dataToSync);
+    }
   }, [
     medications, neighborAlerts, heartRate, devices, healthTab, 
     isFetchingPharmacies, isFetchingUnits, pharmacies, healthUnitsList,
     fetchNearbyPharmacies, fetchNearbyUnits, removeDevice, 
     updateDeviceInterval, setShowAddDevice, simulateFall,
-    isEditingMedication, newMedication, medicationLogs
+    isEditingMedication, newMedication, medicationLogs, onDataChange,
+    updateMedication, addMedication, playAlarmSound, logMedicationAlarm,
+    deleteMedication
   ]);
 
   return (

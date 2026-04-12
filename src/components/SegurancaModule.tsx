@@ -109,18 +109,18 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
   }, [user]);
 
   // Functions
-  const handlePanicStart = () => {
+  const handlePanicStart = React.useCallback(() => {
     panicTimer.current = setTimeout(() => {
       setPanicActive(true);
       triggerPanic();
     }, 2000);
-  };
+  }, []);
 
-  const handlePanicEnd = () => {
+  const handlePanicEnd = React.useCallback(() => {
     if (panicTimer.current) clearTimeout(panicTimer.current);
-  };
+  }, []);
 
-  const callEmergencyService = async (service: string) => {
+  const callEmergencyService = React.useCallback(async (service: string) => {
     if (!user) return;
     setIsListeningAudio(true);
     logModuleUsage('emergencia');
@@ -145,9 +145,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, path);
     }
-  };
+  }, [user, emergencyContacts, t, setView, showToast, handleFirestoreError, logModuleUsage]);
 
-  const triggerPanic = async () => {
+  const triggerPanic = React.useCallback(async () => {
     if (!user) return;
     const path = 'alertas';
     try {
@@ -169,9 +169,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, path);
     }
-  };
+  }, [user, emergencyContacts, t, handleFirestoreError]);
 
-  const analyzeAudio = async () => {
+  const analyzeAudio = React.useCallback(async () => {
     if (!audioFile || !user) return;
     if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true) {
       setShowCheckout(true);
@@ -206,9 +206,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
     } finally {
       setIsAnalyzingAudio(false);
     }
-  };
+  }, [audioFile, user, userProfile, t, genAI, showToast, logModuleUsage, setShowCheckout]);
 
-  const analyzeMessage = async () => {
+  const analyzeMessage = React.useCallback(async () => {
     if (!inputText?.trim()) return;
     setIsAnalyzing(true);
     logModuleUsage('golpes');
@@ -222,9 +222,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
       setResult(JSON.parse(response.text || "{}"));
     } catch (error) { console.error(error); }
     finally { setIsAnalyzing(false); }
-  };
+  }, [inputText, genAI, logModuleUsage]);
 
-  const simulateScamNotification = () => {
+  const simulateScamNotification = React.useCallback(() => {
     const apps = Object.entries(monitoredApps).filter(([_, enabled]) => enabled).map(([app]) => app);
     if (apps.length === 0) {
       showToast(t.activateMonitoringAlert, 'info');
@@ -274,9 +274,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
         }
       });
     }
-  };
+  }, [monitoredApps, actionType, t, showToast, setConfirmDialog]);
 
-  const addSafeContact = async () => {
+  const addSafeContact = React.useCallback(async () => {
     if (newContactName && newContactPhone && user) {
       try {
         await addDoc(collection(db, 'contatos_emergencia'), {
@@ -297,9 +297,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
         handleFirestoreError(err, OperationType.CREATE, 'contatos_emergencia');
       }
     }
-  };
+  }, [newContactName, newContactPhone, newContactRelation, user, showToast, handleFirestoreError]);
 
-  const toggleContact = async (id: string, active: boolean) => {
+  const toggleContact = React.useCallback(async (id: string, active: boolean) => {
     try {
       await updateDoc(doc(db, 'contatos_emergencia', id), {
         active: !active
@@ -307,9 +307,9 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, 'contatos_emergencia');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const removeContact = async (id: string) => {
+  const removeContact = React.useCallback(async (id: string) => {
     try {
       await updateDoc(doc(db, 'contatos_emergencia', id), {
         deleted: true
@@ -318,11 +318,13 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, 'contatos_emergencia');
     }
-  };
+  }, [showToast, handleFirestoreError]);
+
+  const lastDataRef = useRef<string>('');
 
   // Sync Data with App.tsx
   useEffect(() => {
-    onDataChange({
+    const dataToSync = {
       emergencyContacts,
       scamLogs,
       panicActive,
@@ -355,12 +357,29 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
       setNewContactRelation,
       handlePanicStart,
       handlePanicEnd
+    };
+
+    const dataString = JSON.stringify({
+      emergencyContacts, scamLogs, panicActive, inputText, isAnalyzing, 
+      result, audioFile, isAnalyzingAudio, isListeningAudio, 
+      contactAccessPermission, allowContactLocation, newContactName, 
+      newContactPhone, newContactRelation
     });
+
+    if (dataString !== lastDataRef.current) {
+      lastDataRef.current = dataString;
+      onDataChange(dataToSync);
+    }
   }, [
     emergencyContacts, scamLogs, panicActive, inputText, isAnalyzing, 
     result, audioFile, isAnalyzingAudio, isListeningAudio, 
     contactAccessPermission, allowContactLocation, newContactName, 
-    newContactPhone, newContactRelation
+    newContactPhone, newContactRelation, onDataChange, triggerPanic, 
+    callEmergencyService, simulateScamNotification, analyzeAudio, 
+    analyzeMessage, setInputText, setAudioFile, setIsListeningAudio, 
+    setContactAccessPermission, setAllowContactLocation, toggleContact, 
+    removeContact, addSafeContact, setNewContactName, setNewContactPhone, 
+    setNewContactRelation, handlePanicStart, handlePanicEnd
   ]);
 
   return (

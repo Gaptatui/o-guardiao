@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   collection, addDoc, onSnapshot, query, orderBy, where,
   updateDoc, doc, deleteDoc, serverTimestamp
@@ -92,13 +92,10 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     };
   }, [user]);
 
-  useEffect(() => {
-    if (onDataChange) {
-      onDataChange({ expenses, incomes, debts });
-    }
-  }, [expenses, incomes, debts, onDataChange]);
+  const lastDataRef = useRef<string>('');
 
-  const addIncome = async (income: Omit<Income, 'id' | 'uid' | 'timestamp'>) => {
+  // Functions
+  const addIncome = React.useCallback(async (income: Omit<Income, 'id' | 'uid' | 'timestamp'>) => {
     if (!user) return;
     try {
       await addDoc(collection(db, 'incomes'), {
@@ -109,9 +106,9 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'incomes');
     }
-  };
+  }, [user, handleFirestoreError]);
 
-  const updateIncome = async (id: string, income: Partial<Income>) => {
+  const updateIncome = React.useCallback(async (id: string, income: Partial<Income>) => {
     try {
       const { id: _, ...data } = income as any;
       await updateDoc(doc(db, 'incomes', id), data);
@@ -119,17 +116,17 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'incomes');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const deleteIncome = async (id: string) => {
+  const deleteIncome = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'incomes', id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, 'incomes');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const addExpense = async (expense: Omit<Expense, 'id' | 'uid' | 'timestamp'>) => {
+  const addExpense = React.useCallback(async (expense: Omit<Expense, 'id' | 'uid' | 'timestamp'>) => {
     if (!user) return;
     try {
       await addDoc(collection(db, 'expenses'), {
@@ -140,9 +137,9 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'expenses');
     }
-  };
+  }, [user, handleFirestoreError]);
 
-  const updateExpense = async (id: string, expense: Partial<Expense>) => {
+  const updateExpense = React.useCallback(async (id: string, expense: Partial<Expense>) => {
     try {
       const { id: _, ...data } = expense as any;
       await updateDoc(doc(db, 'expenses', id), data);
@@ -150,17 +147,17 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'expenses');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const deleteExpense = async (id: string) => {
+  const deleteExpense = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'expenses', id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, 'expenses');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const addDebt = async (debt: Omit<Debt, 'id' | 'uid' | 'timestamp'>) => {
+  const addDebt = React.useCallback(async (debt: Omit<Debt, 'id' | 'uid' | 'timestamp'>) => {
     if (!user) return;
     try {
       await addDoc(collection(db, 'debts'), {
@@ -171,9 +168,9 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'debts');
     }
-  };
+  }, [user, handleFirestoreError]);
 
-  const updateDebt = async (id: string, debt: Partial<Debt>) => {
+  const updateDebt = React.useCallback(async (id: string, debt: Partial<Debt>) => {
     try {
       const { id: _, ...data } = debt as any;
       await updateDoc(doc(db, 'debts', id), data);
@@ -181,17 +178,17 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'debts');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const deleteDebt = async (id: string) => {
+  const deleteDebt = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'debts', id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, 'debts');
     }
-  };
+  }, [handleFirestoreError]);
 
-  const searchProduct = async () => {
+  const searchProduct = React.useCallback(async () => {
     if (!searchQuery?.trim()) return;
     setIsSearchingProduct(true);
     try {
@@ -207,9 +204,9 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } finally {
       setIsSearchingProduct(false);
     }
-  };
+  }, [searchQuery, genAI]);
 
-  const generateFinancialProject = async () => {
+  const generateFinancialProject = React.useCallback(async () => {
     if (!user || expenses.length === 0) return;
     setIsGeneratingProject(true);
     try {
@@ -242,9 +239,9 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } finally {
       setIsGeneratingProject(false);
     }
-  };
+  }, [user, expenses, incomes, debts, genAI]);
 
-  const searchFinancingRates = async () => {
+  const searchFinancingRates = React.useCallback(async () => {
     if (!user || debts.length === 0) return;
     setIsSearchingRates(true);
     try {
@@ -264,7 +261,40 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
     } finally {
       setIsSearchingRates(false);
     }
-  };
+  }, [user, debts, genAI]);
+
+  // Sync Data with App.tsx
+  useEffect(() => {
+    if (onDataChange) {
+      const dataToSync = { 
+        expenses, 
+        incomes, 
+        debts,
+        addIncome,
+        updateIncome,
+        deleteIncome,
+        addExpense,
+        updateExpense,
+        deleteExpense,
+        addDebt,
+        updateDebt,
+        deleteDebt,
+        generateFinancialProject,
+        searchFinancingRates
+      };
+      
+      const dataString = JSON.stringify({ expenses, incomes, debts });
+      
+      if (dataString !== lastDataRef.current) {
+        lastDataRef.current = dataString;
+        onDataChange(dataToSync);
+      }
+    }
+  }, [
+    expenses, incomes, debts, onDataChange, addIncome, updateIncome, 
+    deleteIncome, addExpense, updateExpense, deleteExpense, addDebt, 
+    updateDebt, deleteDebt, generateFinancialProject, searchFinancingRates
+  ]);
 
   if (!showUI) return null;
 

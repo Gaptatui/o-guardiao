@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Language, UserProfile, UsageLog 
 } from '../types';
@@ -110,7 +110,7 @@ export const MobilidadeModule: React.FC<MobilidadeModuleProps> = ({
     };
   }, [carLocation, carReminderEnabled, carReminderInterval, carAutoDisableTime, carSaveTimestamp, t]);
 
-  const saveCarLocation = () => {
+  const saveCarLocation = React.useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -133,18 +133,18 @@ export const MobilidadeModule: React.FC<MobilidadeModuleProps> = ({
         { timeout: 10000, enableHighAccuracy: true }
       );
     }
-  };
+  }, [t.carLocationSaved, showToast]);
 
-  const openCarRoute = () => {
+  const openCarRoute = React.useCallback(() => {
     if (carLocation) {
       const url = `https://www.google.com/maps/search/?api=1&query=${carLocation.lat},${carLocation.lng}`;
       window.open(url, '_blank');
     } else {
       showToast(t.carNotMarked, "error");
     }
-  };
+  }, [carLocation, t.carNotMarked, showToast]);
 
-  const calculateSafeRoute = async () => {
+  const calculateSafeRoute = React.useCallback(async () => {
     if (!destination?.trim() || !origin?.trim()) return;
     setIsCalculatingRoute(true);
     logModuleUsage('rota_segura');
@@ -170,9 +170,9 @@ export const MobilidadeModule: React.FC<MobilidadeModuleProps> = ({
     } finally {
       setIsCalculatingRoute(false);
     }
-  };
+  }, [origin, destination, t, genAI, logModuleUsage]);
 
-  const getCurrentLocation = () => {
+  const getCurrentLocation = React.useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -184,11 +184,13 @@ export const MobilidadeModule: React.FC<MobilidadeModuleProps> = ({
         }
       );
     }
-  };
+  }, []);
+
+  const lastDataRef = useRef<string>('');
 
   // Sync Data with App.tsx
   useEffect(() => {
-    onDataChange({
+    const dataToSync = {
       carLocation,
       saveCarLocation,
       openCarRoute,
@@ -209,10 +211,21 @@ export const MobilidadeModule: React.FC<MobilidadeModuleProps> = ({
       isCalculatingRoute,
       safeRouteSuggestion,
       mapUrl
+    };
+
+    const dataString = JSON.stringify({
+      carLocation, carReminderEnabled, carReminderInterval, carAutoDisableTime, 
+      origin, destination, isCalculatingRoute, safeRouteSuggestion, mapUrl
     });
+
+    if (dataString !== lastDataRef.current) {
+      lastDataRef.current = dataString;
+      onDataChange(dataToSync);
+    }
   }, [
     carLocation, carReminderEnabled, carReminderInterval, carAutoDisableTime, 
-    origin, destination, isCalculatingRoute, safeRouteSuggestion, mapUrl
+    origin, destination, isCalculatingRoute, safeRouteSuggestion, mapUrl,
+    onDataChange, saveCarLocation, openCarRoute, getCurrentLocation, calculateSafeRoute
   ]);
 
   return null;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Language, UserProfile, UsageLog 
 } from '../types';
@@ -34,7 +34,7 @@ export const LazerModule: React.FC<LazerModuleProps> = ({
   const [leisureCategory, setLeisureCategory] = useState<'cinema' | 'mall' | 'theater' | 'bar' | 'restaurant' | 'supermarket' | 'bakery'>('cinema');
   const [leisureSubCategory, setLeisureSubCategory] = useState<string>('');
 
-  const fetchNearbyLeisure = async (category: string, subCategory?: string) => {
+  const fetchNearbyLeisure = React.useCallback(async (category: string, subCategory?: string) => {
     setIsFetchingLeisure(true);
     setLeisureList([]);
     logModuleUsage('talentos');
@@ -126,7 +126,7 @@ export const LazerModule: React.FC<LazerModuleProps> = ({
     } finally {
       setIsFetchingLeisure(false);
     }
-  };
+  }, [t, genAI, logModuleUsage, showToast]);
 
   useEffect(() => {
     const cacheKey = `${leisureCategory}-${leisureSubCategory}`;
@@ -135,11 +135,13 @@ export const LazerModule: React.FC<LazerModuleProps> = ({
     } else {
       setLeisureList(leisureCache[cacheKey]);
     }
-  }, [leisureCategory, leisureSubCategory]);
+  }, [leisureCategory, leisureSubCategory, leisureCache, fetchNearbyLeisure]);
+
+  const lastDataRef = useRef<string>('');
 
   // Sync Data with App.tsx
   useEffect(() => {
-    onDataChange({
+    const dataToSync = {
       leisureList,
       isFetchingLeisure,
       leisureCategory,
@@ -147,8 +149,17 @@ export const LazerModule: React.FC<LazerModuleProps> = ({
       leisureSubCategory,
       setLeisureSubCategory,
       fetchNearbyLeisure
+    };
+
+    const dataString = JSON.stringify({
+      leisureList, isFetchingLeisure, leisureCategory, leisureSubCategory
     });
-  }, [leisureList, isFetchingLeisure, leisureCategory, leisureSubCategory]);
+
+    if (dataString !== lastDataRef.current) {
+      lastDataRef.current = dataString;
+      onDataChange(dataToSync);
+    }
+  }, [leisureList, isFetchingLeisure, leisureCategory, leisureSubCategory, onDataChange, fetchNearbyLeisure]);
 
   return null; // This module only handles logic and syncing data
 };

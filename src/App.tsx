@@ -45,7 +45,7 @@ import {
 import { 
   Language, AnalysisResult, Alerta, NeighborAlert, HealthProfile, 
   Medication, TalentService, Device, UserProfile, Transaction, 
-  UsageLog, Expense, Debt, 
+  UsageLog, Expense, Debt, Income,
   OperationType, FirestoreErrorInfo 
 } from './types';
 
@@ -97,46 +97,50 @@ export default function App() {
     return saved ? parseFloat(saved) : 1;
   });
 
-  // Module Data
-  const [healthData, setHealthData] = useState<any>({
-    medications: [],
-    neighborAlerts: [],
-    pharmacies: [],
-    healthUnitsList: [],
-    devices: [],
-    heartRate: 72,
-    healthTab: 'PHARMACIES'
-  });
-  const [financeiroData, setFinanceiroData] = useState<any>({
-    expenses: [],
-    incomes: [],
-    debts: []
-  });
-  const [segurancaData, setSegurancaData] = useState<any>({
-    emergencyContacts: [],
-    allowContactLocation: false,
-    contactAccessPermission: false
-  });
-  const [lazerData, setLazerData] = useState<any>({
-    leisureList: [],
-    leisureCategory: 'cinema',
-    leisureSubCategory: ''
-  });
-  const [mobilidadeData, setMobilidadeData] = useState<any>({
-    carLocation: null,
-    origin: '',
-    destination: '',
-    isCalculatingRoute: false
-  });
-  const [configuracaoData, setConfiguracaoData] = useState<any>({});
+  // Module Data (Separated for better performance)
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [neighborAlerts, setNeighborAlerts] = useState<NeighborAlert[]>([]);
+  const [pharmacies, setPharmacies] = useState<any[]>([]);
+  const [healthUnitsList, setHealthUnitsList] = useState<any[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [heartRate, setHeartRate] = useState(72);
+  const [healthTab, setHealthTab] = useState<'PHARMACIES' | 'UNITS'>('PHARMACIES');
+  const [isFetchingPharmacies, setIsFetchingPharmacies] = useState(false);
+  const [isFetchingUnits, setIsFetchingUnits] = useState(false);
+
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [debts, setDebts] = useState<Debt[]>([]);
+
+  const [emergencyContacts, setEmergencyContacts] = useState<any[]>([]);
+  const [allowContactLocation, setAllowContactLocation] = useState(false);
+  const [contactAccessPermission, setContactAccessPermission] = useState(false);
+  const [panicActive, setPanicActive] = useState(false);
+
+  const [leisureList, setLeisureList] = useState<any[]>([]);
+  const [leisureCategory, setLeisureCategory] = useState('cinema');
+  const [leisureSubCategory, setLeisureSubCategory] = useState('');
+  const [isFetchingLeisure, setIsFetchingLeisure] = useState(false);
+
+  const [carLocation, setCarLocation] = useState<any>(null);
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [safeRouteSuggestion, setSafeRouteSuggestion] = useState<string | null>(null);
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
 
   const [isWalking, setIsWalking] = useState(false);
   const [activeAlarmMedication, setActiveAlarmMedication] = useState<Medication | null>(null);
-  const [panicActive, setPanicActive] = useState(false);
-  const panicTimer = useRef<NodeJS.Timeout | null>(null);
+  const [configuracaoData, setConfiguracaoData] = useState<any>({});
 
-  const expenses = financeiroData.expenses || [];
-  const debts = financeiroData.debts || [];
+  // Module Actions
+  const [healthActions, setHealthActions] = useState<any>({});
+  const [financeiroActions, setFinanceiroActions] = useState<any>({});
+  const [segurancaActions, setSegurancaActions] = useState<any>({});
+  const [lazerActions, setLazerActions] = useState<any>({});
+  const [mobilidadeActions, setMobilidadeActions] = useState<any>({});
+
+  const panicTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Auth State
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -212,16 +216,16 @@ export default function App() {
     }
   }, [toast]);
 
-  const showToast = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+  const showToast = React.useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
     setToast({ message, type });
-  };
+  }, []);
 
-  const closeWelcome = () => {
+  const closeWelcome = React.useCallback(() => {
     setShowWelcome(false);
     localStorage.setItem('guardian-welcome-seen', 'true');
-  };
+  }, []);
 
-  const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
+  const handleFirestoreError = React.useCallback((error: unknown, operationType: OperationType, path: string | null) => {
     const errInfo: FirestoreErrorInfo = {
       error: error instanceof Error ? error.message : String(error),
       authInfo: {
@@ -242,7 +246,7 @@ export default function App() {
     }
     console.error('Firestore Error: ', JSON.stringify(errInfo));
     throw new Error(JSON.stringify(errInfo));
-  };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
@@ -293,7 +297,7 @@ export default function App() {
     }
   }, [userProfile, hasShownBirthdayMessage]);
 
-  const upgradeToPro = async (period: 'monthly' | 'yearly', method: 'card' | 'pix') => {
+  const upgradeToPro = React.useCallback(async (period: 'monthly' | 'yearly', method: 'card' | 'pix') => {
     if (!user) return;
     setIsProcessingPurchase(true);
     const userRef = doc(db, 'users', user.uid);
@@ -326,9 +330,9 @@ export default function App() {
       handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
       setIsProcessingPurchase(false);
     }
-  };
+  }, [user, t.purchaseSuccess, showToast, handleFirestoreError]);
 
-  const logModuleUsage = async (modulo: UsageLog['modulo']) => {
+  const logModuleUsage = React.useCallback(async (modulo: UsageLog['modulo']) => {
     if (!user) return;
     try {
       await addDoc(collection(db, 'logs_uso'), {
@@ -339,9 +343,9 @@ export default function App() {
     } catch (err) {
       console.error("Error logging usage:", err);
     }
-  };
+  }, [user]);
 
-  const handleLogin = async () => {
+  const handleLogin = React.useCallback(async () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -349,21 +353,120 @@ export default function App() {
       console.error("Login error:", error); 
       showToast("Erro ao fazer login. Tente novamente.", "error");
     }
-  };
+  }, [showToast]);
 
-  const handlePanicStart = () => segurancaData.handlePanicStart?.();
-  const handlePanicEnd = () => segurancaData.handlePanicEnd?.();
-  const callEmergencyService = (service: string) => segurancaData.callEmergencyService?.(service);
-  const triggerPanic = () => segurancaData.triggerPanic?.();
-  
-  const toggleWalking = () => {
+  const toggleWalking = React.useCallback(() => {
     if (userProfile?.plan !== 'pro' && userProfile?.isVip !== true) {
       setShowCheckout(true);
       return;
     }
     if (!isWalking) logModuleUsage('rota_segura');
     setIsWalking(!isWalking);
-  };
+  }, [userProfile, isWalking, logModuleUsage]);
+
+  // Module Data Update Handlers
+  const handleHealthDataChange = React.useCallback((data: any) => {
+    if (data.medications) setMedications(prev => JSON.stringify(prev) !== JSON.stringify(data.medications) ? data.medications : prev);
+    if (data.neighborAlerts) setNeighborAlerts(prev => JSON.stringify(prev) !== JSON.stringify(data.neighborAlerts) ? data.neighborAlerts : prev);
+    if (data.heartRate !== undefined) setHeartRate(prev => prev !== data.heartRate ? data.heartRate : prev);
+    if (data.devices) setDevices(prev => JSON.stringify(prev) !== JSON.stringify(data.devices) ? data.devices : prev);
+    if (data.healthTab) setHealthTab(prev => prev !== data.healthTab ? data.healthTab : prev);
+    if (data.isFetchingPharmacies !== undefined) setIsFetchingPharmacies(prev => prev !== data.isFetchingPharmacies ? data.isFetchingPharmacies : prev);
+    if (data.isFetchingUnits !== undefined) setIsFetchingUnits(prev => prev !== data.isFetchingUnits ? data.isFetchingUnits : prev);
+    if (data.pharmacies) setPharmacies(prev => JSON.stringify(prev) !== JSON.stringify(data.pharmacies) ? data.pharmacies : prev);
+    if (data.healthUnitsList) setHealthUnitsList(prev => JSON.stringify(prev) !== JSON.stringify(data.healthUnitsList) ? data.healthUnitsList : prev);
+    
+    setHealthActions(prev => {
+      const next = {
+        fetchNearbyPharmacies: data.fetchNearbyPharmacies,
+        fetchNearbyUnits: data.fetchNearbyUnits,
+        simulateFall: data.simulateFall,
+        removeDevice: data.removeDevice,
+        updateDeviceInterval: data.updateDeviceInterval,
+        setShowAddDevice: data.setShowAddDevice,
+        handlePanicStart: data.handlePanicStart,
+        handlePanicEnd: data.handlePanicEnd
+      };
+      // Simple check to avoid unnecessary state updates for functions
+      // We check if the keys exist and are functions
+      return prev.fetchNearbyPharmacies === next.fetchNearbyPharmacies && 
+             prev.simulateFall === next.simulateFall ? prev : next;
+    });
+  }, []);
+
+  const handleFinanceiroDataChange = React.useCallback((data: any) => {
+    if (data.expenses) setExpenses(prev => JSON.stringify(prev) !== JSON.stringify(data.expenses) ? data.expenses : prev);
+    if (data.incomes) setIncomes(prev => JSON.stringify(prev) !== JSON.stringify(data.incomes) ? data.incomes : prev);
+    if (data.debts) setDebts(prev => JSON.stringify(prev) !== JSON.stringify(data.debts) ? data.debts : prev);
+    
+    setFinanceiroActions(prev => {
+      const next = {
+        addIncome: data.addIncome,
+        updateIncome: data.updateIncome,
+        deleteIncome: data.deleteIncome,
+        addExpense: data.addExpense,
+        updateExpense: data.updateExpense,
+        deleteExpense: data.deleteExpense,
+        addDebt: data.addDebt,
+        updateDebt: data.updateDebt,
+        deleteDebt: data.deleteDebt,
+        generateFinancialProject: data.generateFinancialProject,
+        searchFinancingRates: data.searchFinancingRates
+      };
+      return prev.addIncome === next.addIncome && prev.addExpense === next.addExpense ? prev : next;
+    });
+  }, []);
+
+  const handleSegurancaDataChange = React.useCallback((data: any) => {
+    if (data.emergencyContacts) setEmergencyContacts(prev => JSON.stringify(prev) !== JSON.stringify(data.emergencyContacts) ? data.emergencyContacts : prev);
+    if (data.allowContactLocation !== undefined) setAllowContactLocation(prev => prev !== data.allowContactLocation ? data.allowContactLocation : prev);
+    if (data.contactAccessPermission !== undefined) setContactAccessPermission(prev => prev !== data.contactAccessPermission ? data.contactAccessPermission : prev);
+    if (data.panicActive !== undefined) setPanicActive(prev => prev !== data.panicActive ? data.panicActive : prev);
+
+    setSegurancaActions(prev => {
+      const next = {
+        triggerPanic: data.triggerPanic,
+        callEmergencyService: data.callEmergencyService,
+        simulateScamNotification: data.simulateScamNotification,
+        handlePanicStart: data.handlePanicStart,
+        handlePanicEnd: data.handlePanicEnd
+      };
+      return prev.triggerPanic === next.triggerPanic && prev.handlePanicStart === next.handlePanicStart ? prev : next;
+    });
+  }, []);
+
+  const handleLazerDataChange = React.useCallback((data: any) => {
+    if (data.leisureList) setLeisureList(prev => JSON.stringify(prev) !== JSON.stringify(data.leisureList) ? data.leisureList : prev);
+    if (data.leisureCategory) setLeisureCategory(prev => prev !== data.leisureCategory ? data.leisureCategory : prev);
+    if (data.leisureSubCategory !== undefined) setLeisureSubCategory(prev => prev !== data.leisureSubCategory ? data.leisureSubCategory : prev);
+    if (data.isFetchingLeisure !== undefined) setIsFetchingLeisure(prev => prev !== data.isFetchingLeisure ? data.isFetchingLeisure : prev);
+
+    setLazerActions(prev => {
+      const next = {
+        fetchNearbyLeisure: data.fetchNearbyLeisure
+      };
+      return prev.fetchNearbyLeisure === next.fetchNearbyLeisure ? prev : next;
+    });
+  }, []);
+
+  const handleMobilidadeDataChange = React.useCallback((data: any) => {
+    if (data.carLocation !== undefined) setCarLocation(prev => JSON.stringify(prev) !== JSON.stringify(data.carLocation) ? data.carLocation : prev);
+    if (data.origin !== undefined) setOrigin(prev => prev !== data.origin ? data.origin : prev);
+    if (data.destination !== undefined) setDestination(prev => prev !== data.destination ? data.destination : prev);
+    if (data.isCalculatingRoute !== undefined) setIsCalculatingRoute(prev => prev !== data.isCalculatingRoute ? data.isCalculatingRoute : prev);
+    if (data.safeRouteSuggestion !== undefined) setSafeRouteSuggestion(prev => prev !== data.safeRouteSuggestion ? data.safeRouteSuggestion : prev);
+    if (data.mapUrl !== undefined) setMapUrl(prev => prev !== data.mapUrl ? data.mapUrl : prev);
+
+    setMobilidadeActions(prev => {
+      const next = {
+        saveCarLocation: data.saveCarLocation,
+        openCarRoute: data.openCarRoute,
+        getCurrentLocation: data.getCurrentLocation,
+        calculateSafeRoute: data.calculateSafeRoute
+      };
+      return prev.saveCarLocation === next.saveCarLocation && prev.calculateSafeRoute === next.calculateSafeRoute ? prev : next;
+    });
+  }, []);
 
   if (!isAuthReady) {
     return (
@@ -411,10 +514,10 @@ export default function App() {
       {/* Sentinel Bar */}
       <div 
         className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 cursor-pointer select-none"
-        onMouseDown={handlePanicStart}
-        onMouseUp={handlePanicEnd}
-        onTouchStart={handlePanicStart}
-        onTouchEnd={handlePanicEnd}
+        onMouseDown={segurancaActions.handlePanicStart}
+        onMouseUp={segurancaActions.handlePanicEnd}
+        onTouchStart={segurancaActions.handlePanicStart}
+        onTouchEnd={segurancaActions.handlePanicEnd}
       >
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -611,67 +714,67 @@ export default function App() {
             <DashboardView 
               t={t}
               language={language}
-              allowContactLocation={segurancaData.allowContactLocation}
-              contactAccessPermission={segurancaData.contactAccessPermission}
-              emergencyContacts={segurancaData.emergencyContacts}
+              allowContactLocation={allowContactLocation}
+              contactAccessPermission={contactAccessPermission}
+              emergencyContacts={emergencyContacts}
               isWalking={isWalking}
-              simulateFall={healthData.simulateFall}
-              setAllowContactLocation={segurancaData.setAllowContactLocation}
-              setContactAccessPermission={segurancaData.setContactAccessPermission}
-              carLocation={mobilidadeData.carLocation}
-              saveCarLocation={mobilidadeData.saveCarLocation}
-              openCarRoute={mobilidadeData.openCarRoute}
-              carReminderEnabled={mobilidadeData.carReminderEnabled}
-              setCarReminderEnabled={mobilidadeData.setCarReminderEnabled}
-              carReminderInterval={mobilidadeData.carReminderInterval}
-              setCarReminderInterval={mobilidadeData.setCarReminderInterval}
-              carAutoDisableTime={mobilidadeData.carAutoDisableTime}
-              setCarAutoDisableTime={mobilidadeData.setCarAutoDisableTime}
-              setCarLocation={mobilidadeData.setCarLocation}
-              setCarSaveTimestamp={mobilidadeData.setCarSaveTimestamp}
+              simulateFall={healthActions.simulateFall || (() => {})}
+              setAllowContactLocation={setAllowContactLocation}
+              setContactAccessPermission={setContactAccessPermission}
+              carLocation={carLocation}
+              saveCarLocation={mobilidadeActions.saveCarLocation || (() => {})}
+              openCarRoute={mobilidadeActions.openCarRoute || (() => {})}
+              carReminderEnabled={false} // Placeholder
+              setCarReminderEnabled={() => {}} // Placeholder
+              carReminderInterval={30} // Placeholder
+              setCarReminderInterval={() => {}} // Placeholder
+              carAutoDisableTime={120} // Placeholder
+              setCarAutoDisableTime={() => {}} // Placeholder
+              setCarLocation={setCarLocation}
+              setCarSaveTimestamp={() => {}} // Placeholder
               showToast={showToast}
-              origin={mobilidadeData.origin}
-              setOrigin={mobilidadeData.setOrigin}
-              getCurrentLocation={mobilidadeData.getCurrentLocation}
-              destination={mobilidadeData.destination}
-              setDestination={mobilidadeData.setDestination}
-              calculateSafeRoute={mobilidadeData.calculateSafeRoute}
-              isCalculatingRoute={mobilidadeData.isCalculatingRoute}
-              safeRouteSuggestion={mobilidadeData.safeRouteSuggestion}
-              mapUrl={mobilidadeData.mapUrl}
-              neighborAlerts={healthData.neighborAlerts}
+              origin={origin}
+              setOrigin={setOrigin}
+              getCurrentLocation={mobilidadeActions.getCurrentLocation || (() => {})}
+              destination={destination}
+              setDestination={setDestination}
+              calculateSafeRoute={mobilidadeActions.calculateSafeRoute || (() => {})}
+              isCalculatingRoute={isCalculatingRoute}
+              safeRouteSuggestion={safeRouteSuggestion}
+              mapUrl={mapUrl}
+              neighborAlerts={neighborAlerts}
               userProfile={userProfile}
               isAdmin={isAdmin}
-              setShowCheckout={setShowCheckout}
               toggleWalking={toggleWalking}
               setView={setView}
-              callEmergencyService={segurancaData.callEmergencyService}
+              callEmergencyService={segurancaActions.callEmergencyService || (() => {})}
               services={[]}
-              heartRate={healthData.heartRate}
-              medications={healthData.medications}
-              healthTab={healthData.healthTab}
-              setHealthTab={healthData.setHealthTab}
-              fetchNearbyPharmacies={healthData.fetchNearbyPharmacies}
-              fetchNearbyUnits={healthData.fetchNearbyUnits}
-              isFetchingPharmacies={healthData.isFetchingPharmacies}
-              isFetchingUnits={healthData.isFetchingUnits}
-              pharmacies={healthData.pharmacies}
-              healthUnitsList={healthData.healthUnitsList}
+              heartRate={heartRate}
+              medications={medications}
+              healthTab={healthTab}
+              setHealthTab={setHealthTab}
+              fetchNearbyPharmacies={healthActions.fetchNearbyPharmacies || (() => {})}
+              fetchNearbyUnits={healthActions.fetchNearbyUnits || (() => {})}
+              isFetchingPharmacies={isFetchingPharmacies}
+              isFetchingUnits={isFetchingUnits}
+              pharmacies={pharmacies}
+              healthUnitsList={healthUnitsList}
               expenses={expenses}
               debts={debts}
               formatCurrency={formatCurrency}
-              leisureCategory={lazerData.leisureCategory}
-              setLeisureCategory={lazerData.setLeisureCategory}
-              leisureSubCategory={lazerData.leisureSubCategory}
-              setLeisureSubCategory={lazerData.setLeisureSubCategory}
-              isFetchingLeisure={lazerData.isFetchingLeisure}
-              fetchNearbyLeisure={lazerData.fetchNearbyLeisure}
+              leisureCategory={leisureCategory}
+              setLeisureCategory={setLeisureCategory}
+              leisureSubCategory={leisureSubCategory}
+              setLeisureSubCategory={setLeisureSubCategory}
+              isFetchingLeisure={isFetchingLeisure}
+              fetchNearbyLeisure={lazerActions.fetchNearbyLeisure || (() => {})}
               user={user}
-              devices={healthData.devices}
-              removeDevice={healthData.removeDevice}
-              updateDeviceInterval={healthData.updateDeviceInterval}
-              setShowAddDevice={healthData.setShowAddDevice}
-              leisureList={lazerData.leisureList}
+              devices={devices}
+              removeDevice={healthActions.removeDevice || (() => {})}
+              updateDeviceInterval={healthActions.updateDeviceInterval || (() => {})}
+              setShowAddDevice={healthActions.setShowAddDevice || (() => {})}
+              leisureList={leisureList}
+              setShowCheckout={setShowCheckout}
             />
           )}
 
@@ -683,7 +786,7 @@ export default function App() {
             language={language}
             showToast={showToast}
             handleFirestoreError={handleFirestoreError}
-            onDataChange={(data) => setSegurancaData(data)}
+            onDataChange={handleSegurancaDataChange}
             showUI={view === 'SCAM' ? 'SCAM' : view === 'EMERGENCY' ? 'EMERGENCY' : null}
             setView={setView}
             genAI={genAI}
@@ -701,7 +804,7 @@ export default function App() {
             showToast={showToast}
             handleFirestoreError={handleFirestoreError}
             logModuleUsage={logModuleUsage}
-            onDataChange={(data) => setHealthData(data)}
+            onDataChange={handleHealthDataChange}
             isWalking={isWalking}
             showUI={view === 'SAUDE'}
             setView={setView}
@@ -714,7 +817,7 @@ export default function App() {
             t={t}
             language={language}
             showToast={showToast}
-            onDataChange={(data) => setMobilidadeData(data)}
+            onDataChange={handleMobilidadeDataChange}
             genAI={genAI}
             logModuleUsage={logModuleUsage}
           />
@@ -725,7 +828,7 @@ export default function App() {
             t={t}
             language={language}
             showToast={showToast}
-            onDataChange={(data) => setLazerData(data)}
+            onDataChange={handleLazerDataChange}
             genAI={genAI}
             logModuleUsage={logModuleUsage}
           />
@@ -740,7 +843,7 @@ export default function App() {
             setShowCheckout={setShowCheckout}
             genAI={genAI}
             handleFirestoreError={handleFirestoreError}
-            onDataChange={(data) => setFinanceiroData(data)}
+            onDataChange={handleFinanceiroDataChange}
             showUI={view === 'FINANCEIRO'}
             setView={setView}
           />
