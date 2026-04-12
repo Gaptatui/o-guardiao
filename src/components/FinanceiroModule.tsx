@@ -192,7 +192,7 @@ export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
   };
 
   const searchProduct = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery?.trim()) return;
     setIsSearchingProduct(true);
     try {
       const prompt = `Como um assistente de compras inteligente, pesquise o melhor preço online e uma opção local em Santos/SP para o produto: "${searchQuery}". Forneça links (se possível) e uma breve comparação de custo-benefício. Responda em Markdown em português.`;

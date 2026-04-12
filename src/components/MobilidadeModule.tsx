@@ -145,7 +145,7 @@ export const MobilidadeModule: React.FC<MobilidadeModuleProps> = ({
   };
 
   const calculateSafeRoute = async () => {
-    if (!destination.trim() || !origin.trim()) return;
+    if (!destination?.trim() || !origin?.trim()) return;
     setIsCalculatingRoute(true);
     logModuleUsage('rota_segura');
     setSafeRouteSuggestion(null);

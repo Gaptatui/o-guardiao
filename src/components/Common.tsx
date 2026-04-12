@@ -40,6 +40,52 @@ export const ProGuard = ({ children, isPro, t, setShowCheckout }: ProGuardProps)
   );
 };
 
+interface ConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  isDanger?: boolean;
+}
+
+export const ConfirmModal = ({ 
+  isOpen, onClose, onConfirm, title, message, 
+  confirmText = "Confirmar", cancelText = "Cancelar", isDanger = false 
+}: ConfirmModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] shadow-2xl border border-slate-100 dark:border-slate-800 max-w-sm w-full space-y-6">
+        <div className="text-center space-y-2">
+          <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">{title}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{message}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <button 
+            onClick={onClose}
+            className="py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+          >
+            {cancelText}
+          </button>
+          <button 
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className={`py-4 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${isDanger ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-100' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'}`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
   constructor(props: { children: React.ReactNode }) {
     super(props);

@@ -121,8 +121,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               
               {/* Visual Risk Zones on Map */}
               <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-20">
-                {t.riskZones.map((zone: any, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                {t.riskZones?.map((zone: any, idx: number) => (
+                  <div key={`risk-zone-map-${idx}`} className="flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className={`w-2 h-2 rounded-full ${zone.color}`} />
                     <span className="text-[8px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-tighter">{zone.name}</span>
                   </div>
@@ -130,9 +130,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Safe Contacts on Map */}
-              {allowContactLocation && contactAccessPermission && emergencyContacts.filter(c => !c.deleted).map(contact => (
+              {allowContactLocation && contactAccessPermission && emergencyContacts && emergencyContacts.filter(c => !c.deleted).map((contact, idx) => (
                 <motion.div
-                  key={contact.id}
+                  key={contact.id || `contact-${idx}`}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className="absolute z-30 group/marker"
@@ -337,7 +337,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   />
                   <button 
                     onClick={calculateSafeRoute}
-                    disabled={isCalculatingRoute || !destination.trim() || !origin.trim()}
+                    disabled={isCalculatingRoute || !destination?.trim() || !origin?.trim()}
                     title={t.calculate || "Calcular Rota Segura"}
                     className="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"
                   >
@@ -392,8 +392,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="space-y-3">
           <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{t.attentionZones}</h3>
           <div className="grid grid-cols-1 gap-2">
-            {t.riskZones.map((zone: any, idx: number) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm">
+            {t.riskZones?.map((zone: any, idx: number) => (
+              <div key={`risk-zone-list-${idx}`} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${zone.color}`} />
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{zone.name}</span>
@@ -412,8 +412,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <Plus className="w-4 h-4 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" />
           </div>
           <div className="space-y-3">
-            {neighborAlerts.length > 0 ? neighborAlerts.map(alert => (
-              <div key={alert.id} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all">
+            {neighborAlerts && neighborAlerts.length > 0 ? neighborAlerts.map((alert, idx) => (
+              <div key={alert.id || `alert-${idx}`} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
                   <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
@@ -496,8 +496,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer" />
             </div>
             <div className="grid grid-cols-1 gap-4">
-              {services.length > 0 ? services.map(service => (
-                <div key={service.id} className="p-5 border border-slate-100 dark:border-slate-800 rounded-3xl hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all cursor-pointer group bg-slate-50/50 dark:bg-slate-800/30">
+              {services && services.length > 0 ? services.map((service, idx) => (
+                <div key={service.id || `service-${idx}`} className="p-5 border border-slate-100 dark:border-slate-800 rounded-3xl hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all cursor-pointer group bg-slate-50/50 dark:bg-slate-800/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full text-slate-600 dark:text-slate-300 uppercase tracking-wider">{service.categoria}</span>
                     <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
@@ -575,7 +575,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <Plus className="w-3 h-3" />
               </button>
             </div>
-            {medications.length > 0 ? (
+            {medications && medications.length > 0 ? (
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                   <Pill className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -620,8 +620,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            {devices.length > 0 ? devices.map(device => (
-              <div key={device.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group">
+            {devices && devices.length > 0 ? devices.map((device, idx) => (
+              <div key={device.id || `device-${idx}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-xl ${device.status === 'connected' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}>
                     {device.type === 'smartwatch' ? <Zap className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
@@ -708,9 +708,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {isFetchingPharmacies && <Clock className="w-4 h-4 animate-spin text-indigo-600 dark:text-indigo-400" />}
             </div>
             <div className="space-y-3">
-              {pharmacies.map((pharmacy, idx) => (
+              {pharmacies?.map((pharmacy, idx) => (
                 <a 
-                  key={idx} 
+                  key={`pharmacy-${idx}`} 
                   href={pharmacy.uri} 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -747,9 +747,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {isFetchingUnits && <Clock className="w-4 h-4 animate-spin text-rose-600 dark:text-rose-400" />}
             </div>
             <div className="space-y-3">
-              {healthUnitsList.map((unit, idx) => (
+              {healthUnitsList?.map((unit, idx) => (
                 <a 
-                  key={idx} 
+                  key={`unit-${idx}`} 
                   href={unit.uri} 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -799,13 +799,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
             <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">{t.expenses}</p>
             <p className="text-xl font-black text-slate-900 dark:text-slate-100">
-              {formatCurrency(expenses.reduce((acc, curr) => acc + curr.valor, 0), language)}
+              {formatCurrency((expenses || []).reduce((acc, curr) => acc + (curr.valor || 0), 0), language)}
             </p>
           </div>
           <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30">
             <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1">{t.debts}</p>
             <p className="text-xl font-black text-slate-900 dark:text-slate-100">
-              {formatCurrency(debts.reduce((acc, curr) => acc + curr.valorTotal, 0), language)}
+              {formatCurrency((debts || []).reduce((acc, curr) => acc + (curr.valorTotal || 0), 0), language)}
             </p>
           </div>
         </div>
@@ -896,9 +896,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
           <div className="space-y-3">
-            {leisureList.map((item, idx) => (
+            {leisureList?.map((item, idx) => (
               <a 
-                key={idx} 
+                key={`leisure-${idx}`} 
                 href={item.uri} 
                 target="_blank" 
                 rel="noopener noreferrer"

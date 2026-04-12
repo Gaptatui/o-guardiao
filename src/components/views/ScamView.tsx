@@ -161,7 +161,7 @@ export const ScamView: React.FC<ScamViewProps> = ({
         />
         <button
           onClick={analyzeMessage}
-          disabled={isAnalyzing || !inputText.trim()}
+          disabled={isAnalyzing || !inputText?.trim()}
           title={t.checkSecurity}
           className="w-full mt-4 py-4 bg-indigo-600 dark:bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all disabled:opacity-50"
         >

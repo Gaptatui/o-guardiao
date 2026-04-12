@@ -209,7 +209,7 @@ export const SegurancaModule: React.FC<SegurancaModuleProps> = ({
   };
 
   const analyzeMessage = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText?.trim()) return;
     setIsAnalyzing(true);
     logModuleUsage('golpes');
     try {

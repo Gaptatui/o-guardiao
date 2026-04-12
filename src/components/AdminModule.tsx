@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { AdminPanel } from './AdminPanel';
+import { ConfirmModal } from './Common';
 import { 
   Language, UserProfile, Transaction, UsageLog, Alerta, OperationType 
 } from '../types';
@@ -31,6 +32,7 @@ export const AdminModule: React.FC<AdminModuleProps> = ({
     const saved = localStorage.getItem('guardian-plan-config');
     return saved ? JSON.parse(saved) : { monthly: 9.90, yearly: 99.00 };
   });
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     if (!user || !isAdmin) return;
@@ -105,8 +107,11 @@ export const AdminModule: React.FC<AdminModuleProps> = ({
   };
 
   const resetDatabase = async () => {
+    setShowResetConfirm(true);
+  };
+
+  const confirmResetDatabase = async () => {
     if (!isAdmin) return;
-    if (!window.confirm("TEM CERTEZA? Isso apagará TODOS os dados de teste!")) return;
     
     try {
       const collections = ['users', 'transacoes', 'alertas', 'logs_uso'];
@@ -126,21 +131,32 @@ export const AdminModule: React.FC<AdminModuleProps> = ({
   if (!showUI || !isAdmin) return null;
 
   return (
-    <AdminPanel 
-      t={t}
-      language={language}
-      transactions={transactions}
-      allUsers={allUsers}
-      usageLogs={usageLogs}
-      alertasList={alertasList}
-      planConfig={planConfig}
-      setPlanConfig={setPlanConfig}
-      resetDatabase={resetDatabase}
-      updateUserPlanManual={updateUserPlanManual}
-      updateUserRole={updateUserRole}
-      updateUserVip={updateUserVip}
-      updateAlertaStatus={updateAlertaStatus}
-      showToast={showToast}
-    />
+    <>
+      <AdminPanel 
+        t={t}
+        language={language}
+        transactions={transactions}
+        allUsers={allUsers}
+        usageLogs={usageLogs}
+        alertasList={alertasList}
+        planConfig={planConfig}
+        setPlanConfig={setPlanConfig}
+        resetDatabase={resetDatabase}
+        updateUserPlanManual={updateUserPlanManual}
+        updateUserRole={updateUserRole}
+        updateUserVip={updateUserVip}
+        updateAlertaStatus={updateAlertaStatus}
+        showToast={showToast}
+      />
+      <ConfirmModal 
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={confirmResetDatabase}
+        title="Resetar Banco de Dados"
+        message="TEM CERTEZA? Isso apagará TODOS os dados de teste e recarregará o aplicativo!"
+        confirmText="Resetar Tudo"
+        isDanger={true}
+      />
+    </>
   );
 };

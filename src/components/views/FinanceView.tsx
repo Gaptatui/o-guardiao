@@ -381,7 +381,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               />
               <button 
                 onClick={searchProduct}
-                disabled={isSearchingProduct || !searchQuery.trim()}
+                disabled={isSearchingProduct || !searchQuery?.trim()}
                 className="px-6 py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {isSearchingProduct ? <Clock className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}

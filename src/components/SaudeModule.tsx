@@ -10,6 +10,7 @@ import {
   OperationType, UserProfile 
 } from '../types';
 import { HealthView } from './views/HealthView';
+import { ConfirmModal } from './Common';
 import { motion, AnimatePresence } from 'motion/react';
 import { XCircle, Plus, Zap, Activity, Clock } from 'lucide-react';
 
@@ -93,6 +94,7 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
     type: 'smartwatch',
     readingInterval: 3
   });
+  const [medicationToDelete, setMedicationToDelete] = useState<string | null>(null);
 
   // Listeners
   useEffect(() => {
@@ -263,12 +265,18 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
   };
 
   const deleteMedication = async (id: string) => {
-    if (!window.confirm(t.deleteMedication)) return;
+    setMedicationToDelete(id);
+  };
+
+  const confirmDeleteMedication = async () => {
+    if (!medicationToDelete) return;
     try {
-      await deleteDoc(doc(db, 'lembretes_medicacao', id));
+      await deleteDoc(doc(db, 'lembretes_medicacao', medicationToDelete));
       showToast(t.medicationDeletedAlert, "success");
     } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `lembretes_medicacao/${id}`);
+      handleFirestoreError(err, OperationType.DELETE, `lembretes_medicacao/${medicationToDelete}`);
+    } finally {
+      setMedicationToDelete(null);
     }
   };
 
@@ -398,7 +406,7 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
   };
 
   const addDevice = () => {
-    if (!newDevice.name.trim()) return;
+    if (!newDevice.name?.trim()) return;
     const device: Device = {
       id: Math.random().toString(36).substr(2, 9),
       name: newDevice.name,
@@ -589,6 +597,15 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
           medicationLogs={medicationLogs}
         />
       )}
+
+      <ConfirmModal 
+        isOpen={!!medicationToDelete}
+        onClose={() => setMedicationToDelete(null)}
+        onConfirm={confirmDeleteMedication}
+        title={t.deleteMedication}
+        message={t.confirmMedicationDeletion || "Tem certeza que deseja excluir este medicamento?"}
+        isDanger={true}
+      />
     </>
   );
 };

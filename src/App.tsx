@@ -98,12 +98,42 @@ export default function App() {
   });
 
   // Module Data
-  const [healthData, setHealthData] = useState<any>({});
-  const [financeiroData, setFinanceiroData] = useState<any>({});
-  const [segurancaData, setSegurancaData] = useState<any>({});
-  const [lazerData, setLazerData] = useState<any>({});
-  const [mobilidadeData, setMobilidadeData] = useState<any>({});
+  const [healthData, setHealthData] = useState<any>({
+    medications: [],
+    neighborAlerts: [],
+    pharmacies: [],
+    healthUnitsList: [],
+    devices: [],
+    heartRate: 72,
+    healthTab: 'PHARMACIES'
+  });
+  const [financeiroData, setFinanceiroData] = useState<any>({
+    expenses: [],
+    incomes: [],
+    debts: []
+  });
+  const [segurancaData, setSegurancaData] = useState<any>({
+    emergencyContacts: [],
+    allowContactLocation: false,
+    contactAccessPermission: false
+  });
+  const [lazerData, setLazerData] = useState<any>({
+    leisureList: [],
+    leisureCategory: 'cinema',
+    leisureSubCategory: ''
+  });
+  const [mobilidadeData, setMobilidadeData] = useState<any>({
+    carLocation: null,
+    origin: '',
+    destination: '',
+    isCalculatingRoute: false
+  });
   const [configuracaoData, setConfiguracaoData] = useState<any>({});
+
+  const [isWalking, setIsWalking] = useState(false);
+  const [activeAlarmMedication, setActiveAlarmMedication] = useState<Medication | null>(null);
+  const [panicActive, setPanicActive] = useState(false);
+  const panicTimer = useRef<NodeJS.Timeout | null>(null);
 
   const expenses = financeiroData.expenses || [];
   const debts = financeiroData.debts || [];
@@ -221,8 +251,22 @@ export default function App() {
           setUser(u);
           const userRef = doc(db, 'users', u.uid);
           const userSnap = await getDoc(userRef);
+          
           if (userSnap.exists()) {
             setUserProfile(userSnap.data() as UserProfile);
+          } else {
+            // Create initial profile for new user
+            const initialProfile: UserProfile = {
+              uid: u.uid,
+              email: u.email || '',
+              name: u.displayName || '',
+              plan: 'free',
+              isAdmin: u.email === 'gersonproenca@gmail.com',
+              isVip: false,
+              timestamp: Date.now()
+            };
+            await setDoc(userRef, initialProfile);
+            setUserProfile(initialProfile);
           }
         } else {
           setUser(null);
@@ -321,114 +365,44 @@ export default function App() {
     setIsWalking(!isWalking);
   };
 
-  const [isWalking, setIsWalking] = useState(false);
-  const [activeAlarmMedication, setActiveAlarmMedication] = useState<Medication | null>(null);
-  const panicTimer = useRef<NodeJS.Timeout | null>(null);
-  const [panicActive, setPanicActive] = useState(false);
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+          <p className="text-xs font-black text-indigo-500 uppercase tracking-[0.3em] animate-pulse">SENTINELA ATIVO</p>
+        </div>
+      </div>
+    );
+  }
 
-  const upgradeToPro = async (period: 'monthly' | 'yearly', method: 'card' | 'pix') => {
-    if (!user) return;
-    setIsProcessingPurchase(true);
-    
-    const userRef = doc(db, 'users', user.uid);
-    const days = period === 'monthly' ? 30 : 365;
-    const nextBilling = Date.now() + (days * 24 * 60 * 60 * 1000);
-    
-    const subData = {
-      plan: 'pro' as 'free' | 'pro',
-      subscriptionStatus: 'active' as 'active' | 'inactive' | 'past_due',
-      subscriptionPeriod: period,
-      nextBillingDate: nextBilling,
-      paymentMethod: method === 'card' ? 'Cartão de Crédito (Visa **** 4242)' : 'Pix (QR Code)'
-    };
-    
-    try {
-      await updateDoc(userRef, subData);
-      
-      await addDoc(collection(db, 'transacoes'), {
-        uid: user.uid,
-        userEmail: user.email,
-        valor: period === 'monthly' ? PLAN_CONFIG.monthly : PLAN_CONFIG.yearly,
-        moeda: 'BRL',
-        tipo: period === 'monthly' ? 'assinatura_mensal' : 'assinatura_anual',
-        meioPagamento: method,
-        status: 'concluido',
-        timestamp: Date.now()
-      });
-
-      setUserProfile(prev => prev ? { ...prev, ...subData } : null);
-      setIsProcessingPurchase(false);
-      setShowCheckout(false);
-      showToast(t.purchaseSuccess, "success");
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
-      setIsProcessingPurchase(false);
-    }
-  };
-
-  const logModuleUsage = async (modulo: UsageLog['modulo']) => {
-    if (!user) return;
-    try {
-      await addDoc(collection(db, 'logs_uso'), {
-        uid: user.uid,
-        modulo,
-        timestamp: Date.now()
-      });
-    } catch (err) {
-      console.error("Error logging usage:", err);
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (error) { 
-      console.error("Login error:", error); 
-      showToast("Erro ao fazer login. Tente novamente.", "error");
-    }
-  };
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
-      try {
-        if (u) {
-          setUser(u);
-          const userRef = doc(db, 'users', u.uid);
-          const userSnap = await getDoc(userRef);
-          
-          if (userSnap.exists()) {
-            setUserProfile(userSnap.data() as UserProfile);
-          }
-        } else {
-          setUser(null);
-          setUserProfile(null);
-        }
-      } catch (error) {
-        console.error("Error processing profile:", error);
-      } finally {
-        setIsAuthReady(true);
-      }
-    }, (error) => {
-      console.error("Firebase Auth error:", error);
-      setIsAuthReady(true); 
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (userProfile && userProfile.birthDay && userProfile.birthMonth && !hasShownBirthdayMessage) {
-      const today = new Date();
-      const day = today.getDate();
-      const month = today.getMonth() + 1;
-
-      if (userProfile.birthDay === day && userProfile.birthMonth === month) {
-        setShowBirthdayModal(true);
-        setHasShownBirthdayMessage(true);
-      }
-    }
-  }, [userProfile, hasShownBirthdayMessage]);
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full bg-slate-900 border border-slate-800 p-12 rounded-[40px] text-center shadow-2xl"
+        >
+          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-indigo-500/20">
+            <ShieldCheck className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase">{t.appName}</h1>
+          <p className="text-slate-400 text-sm font-medium mb-10 leading-relaxed">
+            {t.welcomeSubtitle}
+          </p>
+          <button 
+            onClick={handleLogin}
+            className="w-full py-4 bg-white text-slate-950 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-100 transition-all shadow-lg"
+          >
+            <LogIn className="w-5 h-5" />
+            {t.loginLabel}
+          </button>
+          <p className="mt-8 text-[10px] text-slate-500 font-bold uppercase tracking-widest">{t.footer}</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>
