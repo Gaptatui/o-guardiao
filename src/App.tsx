@@ -648,6 +648,7 @@ export default function App() {
         <AnimatePresence>
           {showMobileMenu && (
             <motion.div
+              key="mobile-menu"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -663,7 +664,7 @@ export default function App() {
                   { id: 'SETTINGS', label: t.settings, icon: User },
                 ].map((item) => (
                   <button
-                    key={item.id}
+                    key={item.id || 'unknown-item'}
                     onClick={() => {
                       setView(item.id as any);
                       setShowMobileMenu(false);
@@ -689,7 +690,13 @@ export default function App() {
         {/* Birthday Modal */}
         <AnimatePresence>
           {showBirthdayModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              key="birthday-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+            >
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -711,13 +718,14 @@ export default function App() {
                   Obrigado!
                 </button>
               </motion.div>
-            </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {view === 'DASHBOARD' && (
             <DashboardView 
+              key="dashboard-view"
               t={t}
               language={language}
               allowContactLocation={allowContactLocation}
@@ -852,6 +860,7 @@ export default function App() {
             onDataChange={handleFinanceiroDataChange}
             showUI={view === 'FINANCEIRO'}
             setView={setView}
+            showToast={showToast}
           />
 
           <ConfiguracaoModule 

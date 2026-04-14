@@ -24,10 +24,11 @@ interface FinanceiroModuleProps {
   onDataChange?: (data: { expenses: Expense[]; incomes: Income[]; debts: Debt[] }) => void;
   showUI?: boolean;
   setView: (v: any) => void;
+  showToast: (msg: string, type: 'success' | 'error' | 'info') => void;
 }
 
 export const FinanceiroModule: React.FC<FinanceiroModuleProps> = ({
-  user, t, language, formatCurrency, userProfile, isAdmin, setShowCheckout, genAI, handleFirestoreError, onDataChange, showUI = true, setView
+  user, t, language, formatCurrency, userProfile, isAdmin, setShowCheckout, genAI, handleFirestoreError, onDataChange, showUI = true, setView, showToast
 }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);

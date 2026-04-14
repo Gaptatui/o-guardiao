@@ -154,7 +154,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               >
                 <option value="">-</option>
                 {Array.from({length: 31}, (_, i) => i + 1).map(d => (
-                  <option key={d} value={d}>{d}</option>
+                  <option key={d || 'unknown-day'} value={d}>{d}</option>
                 ))}
               </select>
             </div>

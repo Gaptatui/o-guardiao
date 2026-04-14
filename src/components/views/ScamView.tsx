@@ -62,7 +62,7 @@ export const ScamView: React.FC<ScamViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {Object.entries(monitoredApps).map(([app, enabled]) => (
                 <div 
-                  key={app}
+                  key={app || 'unknown-app'}
                   className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${
                     !autoMonitoring ? 'opacity-40 grayscale pointer-events-none' : 
                     enabled ? 'bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-900/50 shadow-sm' : 'bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800'
@@ -128,7 +128,7 @@ export const ScamView: React.FC<ScamViewProps> = ({
           </div>
           <div className="space-y-4">
             {scamLogs.map((log, idx) => (
-              <div key={`scam-log-${log.id || `idx-${idx}-${log.timestamp}`}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-start gap-4">
+              <div key={`scam-log-${log.id || `${log.app}-${log.timestamp}`}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-start gap-4">
                 <div className={`p-2 rounded-xl shrink-0 ${log.action.includes('BLOQUEADO') ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   <ShieldAlert className="w-4 h-4" />
                 </div>
