@@ -145,7 +145,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Visual Risk Zones on Map */}
               <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-20">
                 {t.riskZones?.map((zone: any, idx: number) => (
-                  <div key={`risk-zone-map-${zone.name}-${zone.level}`} className="flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div key={`risk-zone-map-${zone.name}-${idx}`} className="flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className={`w-2 h-2 rounded-full ${zone.color}`} />
                     <span className="text-[8px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-tighter">{zone.name}</span>
                   </div>
@@ -416,7 +416,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{t.attentionZones}</h3>
           <div className="grid grid-cols-1 gap-2">
             {t.riskZones?.map((zone: any, idx: number) => (
-              <div key={`risk-zone-list-${zone.name}-${zone.level}`} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm">
+              <div key={`risk-zone-list-${zone.name}-${idx}`} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${zone.color}`} />
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{zone.name}</span>
@@ -436,7 +436,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="space-y-3">
             {neighborAlerts && neighborAlerts.length > 0 ? neighborAlerts.map((alert, idx) => (
-              <div key={`neighbor-alert-${alert.id || `${alert.titulo}-${alert.timestamp}`}`} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all">
+              <div key={`neighbor-alert-${alert.id || alert.titulo}-${idx}`} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
                   <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
@@ -520,7 +520,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="grid grid-cols-1 gap-4">
               {services && services.length > 0 ? services.map((service, idx) => (
-                <div key={`service-${service.id || `${service.titulo}-${service.categoria}`}`} className="p-5 border border-slate-100 dark:border-slate-800 rounded-3xl hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all cursor-pointer group bg-slate-50/50 dark:bg-slate-800/30">
+                <div key={`service-${service.id || service.titulo}-${idx}`} className="p-5 border border-slate-100 dark:border-slate-800 rounded-3xl hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all cursor-pointer group bg-slate-50/50 dark:bg-slate-800/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full text-slate-600 dark:text-slate-300 uppercase tracking-wider">{service.categoria}</span>
                     <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
@@ -644,7 +644,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="grid grid-cols-1 gap-3">
             {devices && devices.length > 0 ? devices.map((device, idx) => (
-              <div key={`device-${device.id || `${device.name}-${device.type}`}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group">
+              <div key={`device-${device.id || device.name}-${idx}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-xl ${device.status === 'connected' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}>
                     {device.type === 'smartwatch' ? <Zap className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
@@ -664,8 +664,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         onChange={(e) => updateDeviceInterval(device.id, parseInt(e.target.value))}
                         className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
                       >
-                        {[1, 3, 5, 10, 30, 60].map(val => (
-                          <option key={val || 'unknown-val'} value={val} className="dark:bg-slate-800">{val}s</option>
+                      {[1, 3, 5, 10, 30, 60].map((val, i) => (
+                          <option key={`interval-${val}-${i}`} value={val} className="dark:bg-slate-800">{val}s</option>
                         ))}
                       </select>
                     </div>
@@ -733,7 +733,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="space-y-3">
               {pharmacies?.map((pharmacy, idx) => (
                 <a 
-                  key={`pharmacy-${pharmacy.name}-${pharmacy.uri || idx}`} 
+                  key={`pharmacy-${pharmacy.id || pharmacy.name}-${idx}`} 
                   href={pharmacy.uri} 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -772,7 +772,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="space-y-3">
               {healthUnitsList?.map((unit, idx) => (
                 <a 
-                  key={`unit-${unit.name}-${unit.uri || idx}`} 
+                  key={`unit-${unit.id || unit.name}-${idx}`} 
                   href={unit.uri} 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -851,9 +851,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             { id: 'restaurant', icon: Utensils, label: t.restaurant },
             { id: 'supermarket', icon: ShoppingBasket, label: t.supermarket },
             { id: 'bakery', icon: Store, label: t.bakery },
-          ].map((cat) => (
+          ].map((cat, i) => (
             <button
-              key={cat.id || 'unknown-cat'}
+              key={`cat-${cat.id || i}`}
               onClick={() => {
                 setLeisureCategory(cat.id as any);
                 setLeisureSubCategory('');
@@ -921,7 +921,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="space-y-3">
             {leisureList?.map((item, idx) => (
               <a 
-                key={`leisure-${item.name}-${item.uri || idx}`} 
+                key={`leisure-${item.id || item.name}-${idx}`} 
                 href={item.uri} 
                 target="_blank" 
                 rel="noopener noreferrer"

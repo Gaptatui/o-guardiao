@@ -529,9 +529,9 @@ export const SaudeModule: React.FC<SaudeModuleProps> = ({
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.deviceType}</label>
                   <div className="grid grid-cols-1 gap-2">
-                    {(['smartwatch', 'heartMonitor', 'oximeter'] as const).map(type => (
+                    {(['smartwatch', 'heartMonitor', 'oximeter'] as const).map((type, i) => (
                       <button
-                        key={type || 'unknown-type'}
+                        key={`device-type-${type}-${i}`}
                         onClick={() => setNewDevice({...newDevice, type})}
                         className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 ${newDevice.type === type ? 'border-rose-600 bg-rose-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
                       >

@@ -161,7 +161,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentIncomes}</h4>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
               {incomes.map((inc, idx) => (
-                <div key={`income-${inc.id || `${inc.descricao}-${inc.valor}`}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
+                <div key={`income-${inc.id || `${inc.descricao}-${inc.valor}-${idx}`}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
                   <div className="flex-1">
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{inc.descricao}</p>
                     <p className="text-[8px] text-slate-400 uppercase font-black">{inc.categoria}</p>
@@ -259,7 +259,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentExpenses}</h4>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
               {expenses.map((exp, idx) => (
-                <div key={`expense-${exp.id || `${exp.descricao}-${exp.valor}`}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
+                <div key={`expense-${exp.id || `${exp.descricao}-${exp.valor}-${idx}`}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
                   <div className="flex-1">
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{exp.descricao}</p>
                     <p className="text-[8px] text-slate-400 uppercase font-black">{exp.categoria}</p>
@@ -347,7 +347,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t.recentDebts}</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
                 {debts.map((debt, idx) => (
-                  <div key={`debt-${debt.id || `${debt.credor}-${debt.valorTotal}`}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
+                  <div key={`debt-${debt.id || `${debt.credor}-${debt.valorTotal}-${idx}`}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group">
                     <div className="flex-1">
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{debt.credor}</p>
                       <p className="text-[8px] text-slate-400 uppercase font-black">{debt.taxaJuros}% a.m.</p>
@@ -517,7 +517,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             </div>
             <div className="space-y-3">
               {financingOptions.length > 0 ? financingOptions.map((opt, i) => (
-                <div key={`financing-opt-${opt.bank}-${i}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <div key={`financing-opt-${opt.bank}-${opt.rate}`} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black text-slate-800 dark:text-slate-200">{opt.bank}</span>
                     <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">{opt.rate}</span>
@@ -553,7 +553,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.tips}</p>
                   <div className="flex flex-wrap gap-2">
                     {financialProject.dicas.map((dica, i) => (
-                      <span key={`financial-tip-${i}`} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[10px] font-bold">{dica}</span>
+                      <span key={`financial-tip-${i}-${dica}`} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[10px] font-bold">{dica}</span>
                     ))}
                   </div>
                 </div>
@@ -561,7 +561,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.goals}</p>
                   <div className="space-y-2">
                     {financialProject.metas.map((meta, i) => (
-                      <div key={`financial-goal-${i}`} className="flex items-center gap-2">
+                      <div key={`financial-goal-${i}-${meta}`} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
                         <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{meta}</span>
                       </div>
